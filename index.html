@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dave's Goofy Games | Arcade</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Retro Arcade Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #050812;
+      --bg-panel: rgba(7, 11, 30, 0.95);
+      --accent-pink: #ff4d9d;
+      --accent-cyan: #00e6ff;
+      --accent-yellow: #ffe76b;
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text-main: #f4f4ff;
+      --text-muted: #a5a8d6;
+      --shadow-neon: 0 0 12px rgba(0, 230, 255, 0.5), 0 0 24px rgba(255, 77, 157, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #1a2b6b 0, #050812 50%, #02030a 100%);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .scanlines {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.25) 0px,
+        rgba(0, 0, 0, 0.25) 1px,
+        transparent 2px,
+        transparent 3px
+      );
+      mix-blend-mode: multiply;
+      opacity: 0.45;
+      z-index: 1;
+    }
+
+    .crt-glow {
+      position: fixed;
+      inset: 0;
+      box-shadow: 0 0 80px rgba(0, 230, 255, 0.25) inset;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .page {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1100px;
+      padding: 24px 16px 40px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, rgba(8, 15, 40, 0.95), rgba(10, 30, 70, 0.95));
+      border-radius: 18px;
+      border: 1px solid rgba(0, 0, 0, 0.5);
+      box-shadow: var(--shadow-neon);
+      padding: 20px 20px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #ffe76b 0, #ff4d9d 40%, #2a3eff 100%);
+      box-shadow: var(--shadow-neon);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-icon::before,
+    .logo-icon::after {
+      content: "";
+      position: absolute;
+      inset: 18%;
+      border-radius: 8px;
+      border: 2px solid rgba(5, 8, 18, 0.8);
+      transform: rotate(-10deg);
+    }
+
+    .logo-icon::after {
+      inset: 30%;
+      transform: rotate(10deg);
+      border-color: rgba(5, 8, 18, 0.6);
+    }
+
+    .logo-text-main {
+      font-family: 'Press Start 2P', system-ui, sans-serif;
+      font-size: clamp(14px, 2.4vw, 18px);
+      color: var(--accent-cyan);
+      text-shadow:
+        0 0 3px rgba(0, 230, 255, 0.7),
+        0 0 8px rgba(255, 77, 157, 0.5);
+      letter-spacing: 0.08em;
+    }
+
+    .logo-text-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .header-chip {
+      font-family: 'Press Start 2P', system-ui, sans-serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 230, 255, 0.6);
+      color: var(--accent-yellow);
+      background: radial-gradient(circle at top, rgba(0, 230, 255, 0.15), transparent 60%);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .header-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-pink);
+      box-shadow: 0 0 8px rgba(255, 77, 157, 0.9);
+    }
+
+    .intro {
+      background: var(--bg-panel);
+      border-radius: 18px;
+      border: 1px solid var(--card-border);
+      padding: 18px 20px 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr);
+      gap: 20px;
+    }
+
+    .intro-copy h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 12px rgba(0, 230, 255, 0.4);
+    }
+
+    .intro-copy p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 48rem;
+    }
+
+    .intro-copy strong {
+      color: var(--accent-yellow);
+      font-weight: 700;
+    }
+
+    .intro-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-family: 'Press Start 2P', system-ui, sans-serif;
+      color: var(--text-muted);
+    }
+
+    .intro-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: radial-gradient(circle at left, rgba(0, 230, 255, 0.08), transparent 60%);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .intro-stat-label {
+      opacity: 0.8;
+    }
+
+    .intro-stat-value {
+      color: var(--accent-cyan);
+    }
+
+    .games-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .games-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .games-title {
+      font-family: 'Press Start 2P', system-ui, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent-yellow);
+    }
+
+    .games-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .game-card {
+      position: relative;
+      background: linear-gradient(145deg, rgba(10, 15, 45, 0.95), rgba(5, 8, 20, 0.98));
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      padding: 16px 14px 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition:
+        transform 0.18s ease-out,
+        box-shadow 0.18s ease-out,
+        border-color 0.18s ease-out;
+      cursor: pointer;
+    }
+
+    .game-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0 0, rgba(0, 230, 255, 0.11), transparent 60%),
+        radial-gradient(circle at 100% 0, rgba(255, 77, 157, 0.11), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.18s ease-out;
+      pointer-events: none;
+    }
+
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6);
+      border-color: rgba(0, 230, 255, 0.6);
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
+    }
+
+    .game-tag-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-family: 'Press Start 2P', system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .game-tag-pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 230, 255, 0.7);
+      color: var(--accent-cyan);
+    }
+
+    .game-tag-mode {
+      opacity: 0.7;
+    }
+
+    .game-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .game-title span {
+      font-size: 12px;
+      color: var(--accent-pink);
+      font-family: 'Press Start 2P', system-ui, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .game-description {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .game-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--accent-yellow);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .badge-secondary {
+      color: var(--accent-cyan);
+    }
+
+    .game-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: none;
+      font-family: 'Press Start 2P', system-ui, sans-serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--bg-main);
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink));
+      box-shadow: 0 0 12px rgba(0, 230, 255, 0.7);
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .play-btn span {
+      font-size: 11px;
+    }
+
+    .play-btn:hover {
+      box-shadow: 0 0 16px rgba(0, 230, 255, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .play-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+      line-height: 1.4;
+    }
+
+    .play-meta strong {
+      color: var(--accent-yellow);
+      font-weight: 700;
+    }
+
+    .footer {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .footer span {
+      color: var(--accent-cyan);
+    }
+
+    .footer small {
+      display: block;
+      margin-top: 4px;
+      font-size: 10px;
+    }
+
+    a.card-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 720px) {
+      .page {
+        padding-inline: 12px;
+      }
+
+      .intro {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .header {
+        padding-inline: 16px;
+      }
+
+      .games-subtitle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="crt-glow"></div>
+
+  <main class="page">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon"></div>
+        <div>
+          <div class="logo-text-main">Dave's Goofy Games</div>
+          <div class="logo-text-sub">Tiny web arcade • Experiments • Chaos-friendly chess</div>
+        </div>
+      </div>
+      <div class="header-chip">
+        <span class="header-chip-dot"></span>
+        <span>Now loading: Wizard Chess</span>
+      </div>
+    </header>
+
+    <section class="intro">
+      <div class="intro-copy">
+        <h2>Welcome to the <strong>Goofy Arcade</strong></h2>
+        <p>
+          This is Dave’s little corner of the internet for browser-based experiments, oddball ideas,
+          and games that don’t take themselves too seriously. Start with
+          <strong>Wizard Chess</strong>—a chaos-fueled twist on classic chess with spells, mana, and
+          unpredictable events—and check back as new games join the cabinet.
+        </p>
+      </div>
+      <div class="intro-stats">
+        <div class="intro-stat-row">
+          <span class="intro-stat-label">Arcade Status</span>
+          <span class="intro-stat-value">Online</span>
+        </div>
+        <div class="intro-stat-row">
+          <span class="intro-stat-label">Games Loaded</span>
+          <span class="intro-stat-value">1 / ∞</span>
+        </div>
+        <div class="intro-stat-row">
+          <span class="intro-stat-label">Recommended</span>
+          <span class="intro-stat-value">Wizard Chess</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="games-section">
+      <div class="games-header">
+        <h3 class="games-title">Game Cabinet</h3>
+        <p class="games-subtitle">Click a tile to play. New weirdness will appear over time.</p>
+      </div>
+
+      <div class="games-grid">
+        <!-- Wizard Chess Card -->
+        <a class="card-link" href="https://github.com/dwimpush-hub/Games/blob/main/WizardChess.html">
+          <article class="game-card">
+            <div class="game-tag-row">
+              <span class="game-tag-pill">Wizard Chess</span>
+              <span class="game-tag-mode">1P vs AI • Browser</span>
+            </div>
+            <div class="game-title">
+              Wizard Chess
+              <span>Arcade Variant</span>
+            </div>
+            <p class="game-description">
+              Classic chess, but cursed (in a good way). Charge mana as you capture pieces, unleash
+              unique spells for each court piece, and brace for chaotic events that twist the board
+              in your favor—or totally wreck your plans.
+            </p>
+            <div class="game-badges">
+              <span class="badge">Spells &amp; Mana</span>
+              <span class="badge badge-secondary">Chaos Events</span>
+              <span class="badge">AI Opponent</span>
+            </div>
+            <div class="game-footer">
+              <a class="play-btn" href="wizard-chess.html">
+                <span>▶</span> Play Now
+              </a>
+              <div class="play-meta">
+                <div><strong>Best on:</strong> Desktop</div>
+                <div>Works in modern browsers</div>
+              </div>
+            </div>
+          </article>
+        </a>
+
+        <!-- Coming Soon Slot -->
+        <article class="game-card">
+          <div class="game-tag-row">
+            <span class="game-tag-pill">Coming Soon</span>
+            <span class="game-tag-mode">Prototype</span>
+          </div>
+          <div class="game-title">
+            Mystery Game
+            <span>Work in Progress</span>
+          </div>
+          <p class="game-description">
+            A placeholder for the next goofy idea—maybe a rogue-lite, maybe something with lasers,
+            maybe both. Stay tuned as more experiments roll into the arcade.
+          </p>
+          <div class="game-badges">
+            <span class="badge badge-secondary">Under Construction</span>
+            <span class="badge">Powered by HTML/JS</span>
+          </div>
+          <div class="game-footer">
+            <button class="play-btn" type="button" disabled>
+              <span>⧗</span> Not Yet Playable
+            </button>
+            <div class="play-meta">
+              <div><strong>Status:</strong> In Dev</div>
+              <div>Check back later</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Built by Dave for fun.</span>
+      <small>Hosted on GitHub Pages • If something breaks, just blame the chaos engine.</small>
+    </footer>
+  </main>
+</body>
+</html>
