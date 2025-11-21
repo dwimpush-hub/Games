@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Wizard Chess</title>
+<style>
+:root {
+  --bg-main: radial-gradient(circle at top, #1b1630, #05030a 60%);
+  --board-dark: #332a4d;
+  --board-light: #f5f0ff;
+  --accent: #ffca28;
+  --danger: #ff6f61;
+  --text: #f5f5f5;
+  --board-outline: rgba(255,255,255,0.1);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg-main);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* Game layout */
+.game-shell {
+  display: grid;
+  grid-template-columns: minmax(350px, 1fr) minmax(260px, 0.8fr);
+  gap: 24px;
+  padding: 24px;
+  width: min(1200px, 96%);
+  margin: 24px auto;
+  border-radius: 24px;
+  background: rgba(20, 10, 40, 0.55);
+  box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  border: 1px solid var(--board-outline);
+}
+@media (max-width: 900px) {
+  .game-shell { grid-template-columns: 1fr; }
+}
+.board-wrap {
+  position: relative;
+  padding: clamp(12px, 2vw, 20px);
+  border-radius: 20px;
+  background: radial-gradient(circle at 20% 0, #3f2b96, #1f1030 55%, #05030a);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Chaos flash animation */
+.board-wrap.chaos-flash {
+  animation: chaosFlash 0.6s ease-out;
+}
+@keyframes chaosFlash {
+  0% {
+    box-shadow:
+      0 0 32px rgba(255, 202, 40, 0.8),
+      0 0 64px rgba(124, 77, 255, 0.9),
+      inset 0 0 20px rgba(0,0,0,0.6);
+    border: 2px solid rgba(255, 202, 40, 0.9);
+  }
+  100% {
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+    border: 2px solid rgba(255,255,255,0.12);
+  }
+}
+
+.board {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-auto-rows: 1fr;
+  border-radius: 16px;
+  overflow: hidden;
+  user-select: none;
+  border: 2px solid rgba(255,255,255,0.12);
+}
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  cursor: pointer;
+  position: relative;
+}
+.square.dark { background: var(--board-dark); }
+.square.light { background: var(--board-light); }
+.piece {
+  filter: drop-shadow(0 0 6px rgba(0,0,0,0.6));
+  transition: transform 0.1s ease;
+}
+.square:hover .piece { transform: translateY(-2px); }
+
+/* Coordinate labels */
+.coord-label {
+  position: absolute;
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.35);
+  bottom: 2px;
+  right: 4px;
+  pointer-events: none;
+}
+
+/* GOLD legal-move glow */
+.square.glow::after {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 202, 40, 0.95);
+  box-shadow: 0 0 10px rgba(255, 202, 40, 0.9), 0 0 18px rgba(255, 202, 40, 0.6);
+  background: radial-gradient(circle, rgba(255, 202, 40, 0.25) 0, transparent 65%);
+}
+
+/* Hint glow (blue-ish) + pulse */
+.square.hint-glow::after {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border-radius: 10px;
+  border: 2px solid rgba(64, 196, 255, 0.95);
+  box-shadow: 0 0 10px rgba(64, 196, 255, 0.9), 0 0 18px rgba(64, 196, 255, 0.6);
+  background: radial-gradient(circle, rgba(64, 196, 255, 0.25) 0, transparent 65%);
+  animation: hintPulse 1s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.7; }
+}
+
+/* King in check (red glow) */
+.square.in-check::after {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 111, 97, 0.98);
+  box-shadow: 0 0 10px rgba(255, 111, 97, 0.9), 0 0 18px rgba(255, 111, 97, 0.6);
+  background: radial-gradient(circle, rgba(255, 111, 97, 0.25) 0, transparent 65%);
+}
+
+/* Enchanted piece pulse */
+.enchanted { animation: enchantPulse 1s ease-in-out infinite; }
+@keyframes enchantPulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(140, 82, 255, 0.8)); }
+  50% { filter: drop-shadow(0 0 12px rgba(140, 82, 255, 1)); }
+}
+
+/* Sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(60,40,90,0.4);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.45);
+}
+.sidebar h2 { font-size: 1.4rem; margin: 4px 0; }
+.turn-indicator { font-size: 0.9rem; opacity: 0.85; }
+
+.controls { display: flex; flex-direction: column; gap: 6px; }
+.controls-row { display: flex; gap: 6px; width: 100%; justify-content: space-between; }
+.controls-row button { flex: 1; font-size: 0.85rem; }
+
+button, select {
+  font-size: 1rem;
+  border-radius: 10px;
+  padding: 7px 12px;
+  border: none;
+  cursor: pointer;
+}
+button {
+  background: rgba(255,255,255,0.1);
+  color: var(--text);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+select {
+  background: rgba(255,255,255,0.12);
+  color: var(--text);
+}
+
+/* (Chaos toggle removed) */
+
+.mana-label { margin-top: 10px; font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.8; }
+.mana-track { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 4px; }
+.mana-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #40c4ff, #7c4dff, #ffeb3b); transition: width 0.25s ease; }
+
+#spellContainer { text-align: center; margin-top: 8px; }
+
+#infoBox {
+  margin-top: 10px;
+  padding: 18px;
+  border-radius: 16px;
+  text-align: center;
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: pre-line;    /* lore + spell text stacked with blank line */
+}
+
+#moveHistory {
+  max-height: 220px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  padding-top: 8px;
+  font-size: 0.8rem;
+  display: none;
+}
+#moveHistory::-webkit-scrollbar{width:6px;}
+#moveHistory::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.4); border-radius: 4px; }
+
+/* Piece legend */
+.legend {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 0.8rem;
+}
+.legend-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+.legend-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+.legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.legend-icon {
+  min-width: 72px;
+}
+.legend-name {
+  flex: 1;
+}
+
+/* Hint piece name highlight in text */
+.hint-piece-name {
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+<div class="game-shell">
+  <div class="board-wrap">
+    <div id="board" class="board"></div>
+  </div>
+
+  <div class="sidebar">
+    <h2>Wizard Chess</h2>
+    <div class="turn-indicator" id="turnIndicator">Order to move</div>
+
+    <div class="controls">
+      <div class="controls-row">
+        <button id="resetBtn">New Duel</button>
+        <button id="swapBtn">Swap Sides</button>
+        <button id="undoBtn">Undo</button>
+      </div>
+      <div class="controls-row">
+        <button id="saveBtn">Save</button>
+        <button id="loadBtn">Load</button>
+        <button id="hintBtn">Hint</button>
+      </div>
+    </div>
+
+    <label>Difficulty:
+      <select id="difficultySelect">
+        <option value="easy">Easy (Undo, chill AI)</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard (no undo, spicier AI)</option>
+      </select>
+    </label>
+
+    <!-- Chaos toggle removed; Chaos is always on now -->
+
+    <div class="mana-label">Spell Power</div>
+    <div class="mana-track"><div id="manaFill" class="mana-fill"></div></div>
+    <div id="manaText" style="font-size:0.8rem;text-align:right">0%</div>
+
+    <div id="spellContainer">
+      <button id="spellBtn" disabled>Cast Spell</button>
+      <button id="cancelSpellBtn" style="display:none;">Cancel Spell</button>
+    </div>
+
+    <div id="infoBox">
+      Wizard Chess tip: capture enemy pieces and simply making moves fills your Spell Power bar. When it is full, your pieces (King, Mage, Rook, Bishop, Knight, Pawn) can cast unique spells for one turn.
+    </div>
+
+    <button id="toggleHistory">Show History</button>
+    <div id="moveHistory"></div>
+
+    <div class="legend">
+      <div class="legend-title">Piece Legend</div>
+      <div class="legend-grid">
+        <div class="legend-row">
+          <span class="legend-icon">♔ / ♚</span>
+          <span class="legend-name">King</span>
+        </div>
+        <div class="legend-row">
+          <span class="legend-icon">🧙‍♀️ / 🧙‍♂️</span>
+          <span class="legend-name">Mage (Queen)</span>
+        </div>
+        <div class="legend-row">
+          <span class="legend-icon">🏰 / ⛓️</span>
+          <span class="legend-name">Rook (Tower)</span>
+        </div>
+        <div class="legend-row">
+          <span class="legend-icon">🔮 / ☠️</span>
+          <span class="legend-name">Bishop (Seer)</span>
+        </div>
+        <div class="legend-row">
+          <span class="legend-icon">🐉 / 🦇</span>
+          <span class="legend-name">Knight (Rider)</span>
+        </div>
+        <div class="legend-row">
+          <span class="legend-icon">✨ / 🔥</span>
+          <span class="legend-name">Pawn (Apprentice)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --- Core constants & state --- */
+const ORDER = "w";
+const CHAOS = "b";
+const PIECES = {
+  w:{ k:"♔", q:"🧙‍♀️", r:"🏰", b:"🔮", n:"🐉", p:"✨" },
+  b:{ k:"♚", q:"🧙‍♂️", r:"⛓️", b:"☠️", n:"🦇", p:"🔥" }
+};
+const SAVE_KEY = "wizardChessSave_v8";
+
+/* full names for history / hints */
+const TYPE_NAME = {
+  p: "Pawn",
+  r: "Rook",
+  n: "Knight",
+  b: "Bishop",
+  q: "Mage",
+  k: "King"
+};
+
+let board = [];
+let currentPlayer = ORDER;
+let humanColor = ORDER;
+let aiColor = CHAOS;
+let gameOver = false;
+let selected = null;
+let validMoves = [];
+let spellMode = false;
+let manaPlayer = 0;
+let manaAI = 0;
+let history = [];
+let undoStack = [];
+let difficulty = "medium";
+
+/* Chaos tracking */
+let chaosMoveCounter = 0;
+let chaosNextTrigger = 3;         // more frequent
+let chaosHasTriggered = false;
+const CHAOS_FORCE_AFTER = 6;      // guarantee at least one within 6 half-moves
+
+/* Spells state (now includes pawns) */
+let enchantedPieces = {
+  w: null,
+  b: null
+};
+let spellCooldowns = {
+  w:{ k:0,q:0,r:0,b:0,n:0,p:0 },
+  b:{ k:0,q:0,r:0,b:0,n:0,p:0 }
+};
+
+/* Lore text */
+const LORE = {
+  w: {
+    k: [
+      "The Order King bears a crown woven from starlight and sworn oaths.",
+      "This King's presence wards the board from utter oblivion—for now."
+    ],
+    q: [
+      "The White Mage channels ley lines that run beneath the board.",
+      "Her staff remembers every duel fought on this enchanted grid."
+    ],
+    r: [
+      "These ivory keeps once guarded the the gates of the Celestial City.",
+      "Each castle stone is etched with a binding rune."
+    ],
+    b: [
+      "White Oracles whisper from crystal spheres shimmering with futures.",
+      "Their visions twist around the diagonals like coiling smoke."
+    ],
+    n: [
+      "Order's dragons vault over pieces as if over mountain peaks.",
+      "Ancient pacts bind these wyrms to protect the citadel."
+    ],
+    p: [
+      "Even the humblest spark of magic can ignite a legend.",
+      "Order's apprentices march forward, one quiet spell at a time."
+    ]
+  },
+  b: {
+    k: [
+      "The Chaos King was crowned in a storm of broken vows.",
+      "His shadow spills two squares in every direction."
+    ],
+    q: [
+      "The Warlock of Chaos wields forbidden sigils and laughing stars.",
+      "Each spell he casts frays the edges of reality."
+    ],
+    r: [
+      "These iron bastions were forged in chains and thunder.",
+      "Each fortress drags a prison of forgotten souls behind it."
+    ],
+    b: [
+      "Skull-Seers read omens in the fractures of bone.",
+      "Their gaze can sour crops and sourer hearts."
+    ],
+    n: [
+      "Chaos bats navigate by echoes of fear.",
+      "These riders swoop where sanity thins."
+    ],
+    p: [
+      "Ash-kin march with embers in their veins.",
+      "Every step of a Chaos pawn leaves a scorch mark on fate."
+    ]
+  }
+};
+
+const SPELL_META = {
+  k: {
+    name: "Astral Jaunt",
+    desc: "For one turn, your King may teleport to any empty square on the board. The destination must be unoccupied—no capturing with this spell."
+  },
+  q: {
+    name: "Reality Fracture",
+    desc: "For one turn, your Mage moves like both a Queen and a Knight, bending the grid in impossible angles."
+  },
+  r: {
+    name: "Meteor Tower",
+    desc: "For one turn, your Rook moves like a Queen, surging along ranks, files, and diagonals alike."
+  },
+  b: {
+    name: "Veiled Step",
+    desc: "For one turn, your Bishop may also step a single square up, down, left, or right, slipping through reality’s seams."
+  },
+  n: {
+    name: "Dragon’s Arc",
+    desc: "For one turn, your Knight moves like both a Knight and a Bishop, leaping in L-shapes or sliding along diagonals for surprise strikes."
+  },
+  p: {
+    name: "Piercing March",
+    desc: "For one turn, your Pawn can capture one square straight ahead—but only if an enemy pawn stands in its way."
+  }
+};
+
+const DEFAULT_INFO =
+  "Wizard Chess tip: capture enemy pieces and simply making moves fills your Spell Power bar. When it is full, your pieces (King, Mage, Rook, Bishop, Knight, Pawn) can cast unique spells for one turn.";
+
+/* Helpers */
+function randomLore(piece) {
+  if (!piece) return null;
+  const arr = (LORE[piece.color] && LORE[piece.color][piece.type]) || [];
+  if (!arr.length) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+function isInside(r,c){ return r>=0 && r<8 && c>=0 && c<8; }
+function cloneBoard(src){ return src.map(row => row.map(p => p ? {...p} : null)); }
+function coord(r,c){ return String.fromCharCode("a".charCodeAt(0)+c) + (8-r); }
+function colorName(c){ return c===ORDER ? "Order" : "Chaos"; }
+function pieceFullName(p){ return TYPE_NAME[p.type] || p.type; }
+
+/* Mana & info UI */
+function setInfo(text) {
+  document.getElementById("infoBox").textContent = text;
+}
+function updateTurnIndicator() {
+  document.getElementById("turnIndicator").textContent =
+    `${colorName(currentPlayer)} to move`;
+}
+function updateManaUI() {
+  const val = Math.max(0, Math.min(100, manaPlayer));
+  document.getElementById("manaFill").style.width = val + "%";
+  document.getElementById("manaText").textContent = val.toFixed(0) + "%";
+}
+function gainMana(color, amount) {
+  if (color !== humanColor) return;
+  manaPlayer = Math.max(0, Math.min(100, manaPlayer + amount));
+  updateManaUI();
+}
+
+/* Pulse helper: use hint glow for 2s */
+function pulseSquares(squares) {
+  squares.forEach(({r,c}) => {
+    const el = document.querySelector(`.square[data-row="${r}"][data-col="${c}"]`);
+    if (el) el.classList.add("hint-glow");
+  });
+  setTimeout(() => {
+    squares.forEach(({r,c}) => {
+      const el = document.querySelector(`.square[data-row="${r}"][data-col="${c}"]`);
+      if (el) el.classList.remove("hint-glow");
+    });
+  }, 2000);
+}
+
+/* Board setup */
+function initBoard() {
+  board = Array.from({length:8}, () => Array(8).fill(null));
+  const back = ["r","n","b","q","k","b","n","r"];
+
+  // Chaos on top
+  for (let c=0;c<8;c++) board[0][c] = {color:CHAOS,type:back[c]};
+  for (let c=0;c<8;c++) board[1][c] = {color:CHAOS,type:"p"};
+
+  // Order on bottom
+  for (let c=0;c<8;c++) board[7][c] = {color:ORDER,type:back[c]};
+  for (let c=0;c<8;c++) board[6][c] = {color:ORDER,type:"p"};
+}
+function createBoardSquares() {
+  const boardElem = document.getElementById("board");
+  boardElem.innerHTML = "";
+  for (let r=0;r<8;r++) {
+    for (let c=0;c<8;c++) {
+      const div = document.createElement("div");
+      div.classList.add("square");
+      div.classList.add((r+c)%2===1 ? "dark" : "light");
+      div.dataset.row = r;
+      div.dataset.col = c;
+      div.addEventListener("click", () => handleSquareClick(r,c));
+      div.oncontextmenu = (e) => { e.preventDefault(); cancelSpellMode(); };
+
+      const label = document.createElement("div");
+      label.className = "coord-label";
+      label.textContent = coord(r,c);
+      div.appendChild(label);
+
+      boardElem.appendChild(div);
+    }
+  }
+}
+
+function renderBoard() {
+  const squares = document.querySelectorAll(".square");
+  squares.forEach(el => {
+    el.classList.remove("glow", "in-check");
+    // keep hint-glow
+    el.querySelectorAll(".piece").forEach(p=>p.remove());
+  });
+
+  for (let r=0;r<8;r++) {
+    for (let c=0;c<8;c++) {
+      const el = document.querySelector(`.square[data-row="${r}"][data-col="${c}"]`);
+      const p = board[r][c];
+      if (!p) continue;
+      const span = document.createElement("span");
+      span.className = "piece";
+      const ench = enchantedPieces[p.color];
+      if (ench && ench.r===r && ench.c===c) span.classList.add("enchanted");
+      span.textContent = PIECES[p.color][p.type];
+      el.appendChild(span);
+    }
+  }
+  // highlight valid moves
+  if (selected) {
+    for (const m of validMoves) {
+      const el = document.querySelector(
+        `.square[data-row="${m.r}"][data-col="${m.c}"]`
+      );
+      el.classList.add("glow");
+    }
+  }
+  markKingsInCheck();
+}
+
+/* Attack / check helpers */
+function safeGet(state,r,c){ return isInside(r,c) ? state[r][c] : null; }
+function findKing(color,state=board){
+  for (let r=0;r<8;r++)for (let c=0;c<8;c++){
+    const p=state[r][c];
+    if (p && p.color===color && p.type==="k") return {r,c};
+  }
+  return null;
+}
+function attacked(r,c,color,state=board){
+  const enemy = (color===ORDER?CHAOS:ORDER);
+
+  // enemy knights
+  for (const [dr,dc] of [
+    [1,2],[1,-2],[-1,2],[-1,-2],
+    [2,1],[2,-1],[-2,1],[-2,-1]
+  ]) {
+    const p = safeGet(state,r+dr,c+dc);
+    if (p && p.color===enemy && p.type==="n") return true;
+  }
+
+  // enemy pawns
+  const pawnDir = enemy===ORDER ? -1 : 1;
+  for (const dc of [-1,1]) {
+    const p = safeGet(state,r+pawnDir,c+dc);
+    if (p && p.color===enemy && p.type==="p") return true;
+  }
+
+  // enemy king
+  for (let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    if (!dr && !dc) continue;
+    const p=safeGet(state,r+dr,c+dc);
+    if (p && p.color===enemy && p.type==="k") return true;
+  }
+
+  // rooks/queens
+  for (const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+    let rr=r+dr, cc=c+dc;
+    while(isInside(rr,cc)){
+      const p=state[rr][cc];
+      if (p){
+        if (p.color===enemy && (p.type==="r"||p.type==="q")) return true;
+        break;
+      }
+      rr+=dr; cc+=dc;
+    }
+  }
+
+  // bishops/queens
+  for (const [dr,dc] of [[1,1],[1,-1],[-1,1],[-1,-1]]) {
+    let rr=r+dr, cc=c+dc;
+    while(isInside(rr,cc)){
+      const p=state[rr][cc];
+      if (p){
+        if (p.color===enemy && (p.type==="b"||p.type==="q")) return true;
+        break;
+      }
+      rr+=dr; cc+=dc;
+    }
+  }
+  return false;
+}
+function isInCheck(color,state=board){
+  const pos = findKing(color,state);
+  if (!pos) return false;
+  return attacked(pos.r,pos.c,color,state);
+}
+function markKingsInCheck(){
+  ["w","b"].forEach(color=>{
+    const pos = findKing(color);
+    if (pos && isInCheck(color)){
+      const el = document.querySelector(
+        `.square[data-row="${pos.r}"][data-col="${pos.c}"]`
+      );
+      if (el) el.classList.add("in-check");
+    }
+  });
+}
+function wouldBeInCheck(sr,sc,tr,tc,color,isTeleportKing){
+  const tmp = cloneBoard(board);
+  const piece = tmp[sr][sc];
+  if (!piece) return false;
+  tmp[sr][sc]=null;
+  tmp[tr][tc]={...piece};
+
+  const kingPos = piece.type==="k" ? {r:tr,c:tc} : findKing(color,tmp);
+  if (!kingPos) return true;
+  return attacked(kingPos.r, kingPos.c, color, tmp);
+}
+
+/* Move generation with spells */
+function slide(r,c,dirs,out,color){
+  for (const [dr,dc] of dirs){
+    let rr=r+dr, cc=c+dc;
+    while(isInside(rr,cc)){
+      const p=board[rr][cc];
+      if (!p) out.push({r:rr,c:cc,capture:false});
+      else {
+        if (p.color!==color) out.push({r:rr,c:cc,capture:true});
+        break;
+      }
+      rr+=dr; cc+=dc;
+    }
+  }
+}
+function getMoves(r,c){
+  const p = board[r][c];
+  if (!p) return [];
+  const color = p.color;
+  const moves = [];
+  const ench = enchantedPieces[color];
+  const isEnchanted = ench && ench.r===r && ench.c===c;
+
+  function push(rr,cc,opts={allowCapture:true,allowEmpty:true}){
+    if (!isInside(rr,cc)) return;
+    const t=board[rr][cc];
+    if (!t && opts.allowEmpty) moves.push({r:rr,c:cc,capture:false});
+    else if (t && t.color!==color && opts.allowCapture) moves.push({r:rr,c:cc,capture:true});
+  }
+
+  switch(p.type){
+    case "p": {
+      const dir = color===ORDER ? -1 : 1;
+
+      // normal forward moves (non-capture)
+      if (isInside(r+dir,c) && !board[r+dir][c]){
+        push(r+dir,c);
+        const start = (color===ORDER?6:1);
+        if (r===start && !board[r+2*dir][c]) push(r+2*dir,c);
+      }
+
+      // normal diagonal captures
+      for (const dc of [-1,1]){
+        const rr=r+dir, cc=c+dc;
+        if (!isInside(rr,cc)) continue;
+        if (board[rr][cc] && board[rr][cc].color!==color) push(rr,cc);
+      }
+
+      // Pawn spell: capture straight forward, only enemy pawn
+      if (isEnchanted){
+        const fr = r + dir;
+        if (isInside(fr,c)){
+          const t = board[fr][c];
+          if (t && t.color !== color && t.type === "p"){
+            moves.push({r:fr, c, capture:true});
+          }
+        }
+      }
+      break;
+    }
+    case "n": {
+      const baseOffsets = [
+        [1,2],[1,-2],[-1,2],[-1,-2],
+        [2,1],[2,-1],[-2,1],[-2,-1]
+      ];
+      // Normal Knight moves
+      for (const [dr,dc] of baseOffsets) {
+        push(r+dr,c+dc);
+      }
+      // Spell: also move like a Bishop this turn
+      if (isEnchanted){
+        slide(r,c,[[1,1],[1,-1],[-1,1],[-1,-1]],moves,color);
+      }
+      break;
+    }
+    case "b": {
+      slide(r,c,[[1,1],[1,-1],[-1,1],[-1,-1]],moves,color);
+      if (isEnchanted){
+        for (const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]) push(r+dr,c+dc);
+      }
+      break;
+    }
+    case "r": {
+      if (isEnchanted){
+        slide(r,c,[
+          [1,0],[-1,0],[0,1],[0,-1],
+          [1,1],[1,-1],[-1,1],[-1,-1]
+        ],moves,color);
+      } else {
+        slide(r,c,[[1,0],[-1,0],[0,1],[0,-1]],moves,color);
+      }
+      break;
+    }
+    case "q": {
+      slide(r,c,[
+        [1,0],[-1,0],[0,1],[0,-1],
+        [1,1],[1,-1],[-1,1],[-1,-1]
+      ],moves,color);
+      if (isEnchanted){
+        for (const [dr,dc] of [
+          [1,2],[1,-2],[-1,2],[-1,-2],
+          [2,1],[2,-1],[-2,1],[-2,-1]
+        ]) {
+          const rr=r+dr, cc=c+dc;
+          if (!isInside(rr,cc)) continue;
+          const t=board[rr][cc];
+          if (!t) moves.push({r:rr,c:cc,capture:false});
+          else if (t.color!==color) moves.push({r:rr,c:cc,capture:true});
+        }
+      }
+      break;
+    }
+    case "k": {
+      if (isEnchanted){
+        for (let rr=0; rr<8; rr++){
+          for (let cc=0; cc<8; cc++){
+            if (rr===r && cc===c) continue;
+            if (board[rr][cc]) continue; // teleport only to empty
+            if (!wouldBeInCheck(r,c,rr,cc,color,true)){
+              moves.push({r:rr,c:cc,capture:false});
+            }
+          }
+        }
+      } else {
+        for (let dr=-1;dr<=1;dr++){
+          for (let dc=-1;dc<=1;dc++){
+            if (!dr && !dc) continue;
+            push(r+dr,c+dc);
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  return moves.filter(m => !wouldBeInCheck(r,c,m.r,m.c,color,false));
+}
+
+/* Spells */
+function canCastSpell(piece,isHuman){
+  if (!piece) return false;
+  const mana = isHuman ? manaPlayer : manaAI;
+  if (mana < 100) return false;
+  const cdMap = spellCooldowns[piece.color];
+  if (!cdMap || typeof cdMap[piece.type] === "undefined") return false;
+  return cdMap[piece.type] === 0;
+}
+function updateSpellButton(){
+  const spellBtn = document.getElementById("spellBtn");
+  const cancelBtn = document.getElementById("cancelSpellBtn");
+
+  if (!selected || currentPlayer!==humanColor || gameOver){
+    spellBtn.disabled = true;
+    cancelBtn.style.display = "none";
+    return;
+  }
+  const piece = board[selected.r][selected.c];
+  if (!canCastSpell(piece,true)){
+    spellBtn.disabled = true;
+    cancelBtn.style.display = "none";
+    return;
+  }
+  spellBtn.disabled = spellMode;
+  cancelBtn.style.display = spellMode ? "inline-block" : "none";
+}
+function enterSpellMode(){
+  if (!selected || spellMode || currentPlayer!==humanColor) return;
+  const piece = board[selected.r][selected.c];
+  if (!canCastSpell(piece,true)) return;
+
+  enchantedPieces[piece.color] = { r:selected.r, c:selected.c, type:piece.type };
+  spellMode = true;
+
+  const lore = randomLore(piece);
+  const meta = SPELL_META[piece.type];
+  setInfo((lore ? lore + "\n\n" : "") + `${meta.name}: ${meta.desc}`);
+  updateSpellButton();
+  renderBoard();
+}
+function cancelSpellMode(){
+  if (!spellMode) return;
+  enchantedPieces[humanColor] = null;
+  spellMode = false;
+  setInfo(DEFAULT_INFO);
+  updateSpellButton();
+  renderBoard();
+}
+function consumeSpell(color,type){
+  if (color!==humanColor) return;
+  manaPlayer = 0;
+  updateManaUI();
+  const cd = (type === "p" ? 6 : 4);   // pawn spell has longer cooldown
+  spellCooldowns[color][type] = cd;
+}
+
+/* Movement & history */
+function appendHistory(line){
+  const hist = document.getElementById("moveHistory");
+  const div = document.createElement("div");
+  div.textContent = line;
+  hist.appendChild(div);
+}
+function makeMove(sr,sc,tr,tc){
+  const p = board[sr][sc];
+  const captured = board[tr][tc];
+
+  undoStack.push({
+    board: cloneBoard(board),
+    currentPlayer,
+    manaPlayer,
+    manaAI,
+    spellCooldowns: JSON.parse(JSON.stringify(spellCooldowns)),
+    enchantedPieces: JSON.parse(JSON.stringify(enchantedPieces)),
+    chaosMoveCounter,
+    chaosNextTrigger,
+    chaosHasTriggered
+  });
+
+  board[tr][tc] = p;
+  board[sr][sc] = null;
+
+  // promotion to Mage
+  if (p.type==="p"){
+    if ((p.color===ORDER && tr===0) || (p.color===CHAOS && tr===7)){
+      p.type="q";
+    }
+  }
+
+  const ench = enchantedPieces[p.color];
+  if (ench && ench.r===sr && ench.c===sc && ench.type===p.type){
+    // log spell usage
+    const spellName = SPELL_META[p.type].name;
+    const spellMsg = `${colorName(p.color)} casts ${spellName} on their ${pieceFullName(p)} at ${coord(sr, sc)}.`;
+    history.push(spellMsg);
+    appendHistory(spellMsg);
+
+    consumeSpell(p.color,p.type);
+    enchantedPieces[p.color] = null;
+    spellMode = false;
+  }
+
+  if (p.color===humanColor){
+    gainMana(p.color, captured ? 25 : 12);
+  }
+
+  const notation = `${colorName(p.color)} ${pieceFullName(p)} ${coord(sr,sc)} → ${coord(tr,tc)}${captured ? " x" : ""}`;
+  history.push(notation);
+  appendHistory(notation);
+}
+function undoMove(){
+  if (!undoStack.length || gameOver) return;
+
+  // Pop until we land on a snapshot where it's the human's turn,
+  // or we run out of history. This rewinds full turns (AI + human).
+  let snap = undoStack.pop();
+  while (undoStack.length && snap.currentPlayer !== humanColor) {
+    snap = undoStack.pop();
+  }
+
+  board = cloneBoard(snap.board);
+  currentPlayer = snap.currentPlayer;
+  manaPlayer = snap.manaPlayer;
+  manaAI = snap.manaAI;
+  spellCooldowns = snap.spellCooldowns;
+  enchantedPieces = snap.enchantedPieces;
+  chaosMoveCounter = snap.chaosMoveCounter;
+  chaosNextTrigger = snap.chaosNextTrigger;
+  chaosHasTriggered = snap.chaosHasTriggered;
+
+  // remove move / spell lines we rewound (approximate: just trim last 2 lines)
+  const histElem = document.getElementById("moveHistory");
+  for (let i=0;i<2;i++){
+    if (history.length) history.pop();
+    if (histElem.lastChild) histElem.removeChild(histElem.lastChild);
+  }
+
+  selected = null;
+  validMoves = [];
+  spellMode = false;
+  gameOver = false;
+
+  renderBoard();
+  updateTurnIndicator();
+  updateManaUI();
+  updateSpellButton();
+  setInfo(DEFAULT_INFO);
+}
+
+/* Turn handling & AI */
+function decrementCooldowns(){
+  ["w","b"].forEach(color=>{
+    for (const t of ["k","q","r","b","n","p"]){
+      if (spellCooldowns[color][t]>0) spellCooldowns[color][t]--;
+    }
+  });
+}
+function getAllMovesFor(color){
+  const moves=[];
+  for (let r=0;r<8;r++)for(let c=0;c<8;c++){
+    const p=board[r][c];
+    if (!p || p.color!==color) continue;
+    const ms=getMoves(r,c);
+    for (const m of ms) moves.push({sr:r,sc:c,tr:m.r,tc:m.c});
+  }
+  return moves;
+}
+function doAIMove(){
+  if (gameOver || currentPlayer!==aiColor) return;
+  const moves = getAllMovesFor(aiColor);
+  if (!moves.length){
+    setInfo(`${colorName(aiColor)} has no legal moves. ${colorName(humanColor)} wins!`);
+    gameOver = true;
+    return;
+  }
+  const move = moves[Math.floor(Math.random()*moves.length)];
+  makeMove(move.sr,move.sc,move.tr,move.tc);
+
+  // Render board and pulse the AI's moved piece
+  renderBoard();
+  pulseSquares([{ r: move.tr, c: move.tc }]);
+
+  endTurn();
+}
+function endTurn(){
+  decrementCooldowns();
+  currentPlayer = currentPlayer===ORDER ? CHAOS : ORDER;
+  selected = null;
+  validMoves = [];
+  renderBoard();
+  updateTurnIndicator();
+  updateSpellButton();
+
+  if (!gameOver) maybeTriggerChaos();
+  if (!gameOver && currentPlayer===aiColor){
+    // 3 second pause before AI moves
+    setTimeout(doAIMove, 3000);
+  }
+}
+
+/* Chaos events (non-breaking) */
+const CHAOS_EVENTS = [
+  function manaStorm(){
+    gainMana(humanColor,40);
+    return "Chaos Event: Mana Storm – stray magic surges across the board, filling your spell bar.";
+  },
+  function arcaneSwap(){
+    const pieces=[];
+    for (let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=board[r][c];
+      if (p && p.type!=="k") pieces.push({r,c,color:p.color});
+    }
+    if (pieces.length<2) return null;
+    const colors=["w","b"].filter(color=>pieces.filter(p=>p.color===color).length>=2);
+    if (!colors.length) return null;
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    const pool=pieces.filter(p=>p.color===color);
+    const a=pool[Math.floor(Math.random()*pool.length)];
+    let b;
+    do { b=pool[Math.floor(Math.random()*pool.length)]; } while(b.r===a.r && b.c===a.c);
+    const tmp=board[a.r][a.c];
+    board[a.r][a.c]=board[b.r][b.c];
+    board[b.r][b.c]=tmp;
+
+    // Pulse both swapped squares
+    pulseSquares([{ r: a.r, c: a.c }, { r: b.r, c: b.c }]);
+
+    return "Chaos Event: Arcane Swap – two allied pieces suddenly trade places.";
+  },
+  function pawnShuffle(){
+    const pawns=[];
+    for (let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=board[r][c];
+      if (p && p.type==="p") pawns.push({r,c,color:p.color});
+    }
+    if (!pawns.length) return null;
+    const choice=pawns[Math.floor(Math.random()*pawns.length)];
+    const dir=choice.color===ORDER ? -1 : 1;
+    const rr=choice.r+dir;
+    if (!isInside(rr,choice.c) || board[rr][choice.c]) return null;
+
+    const from = { r: choice.r, c: choice.c };
+    const to = { r: rr, c: choice.c };
+
+    board[rr][choice.c]=board[choice.r][choice.c];
+    board[choice.r][choice.c]=null;
+
+    // Pulse the from and to squares for the shuffled pawn
+    pulseSquares([from, to]);
+
+    return "Chaos Event: Pawn Shuffle – one pawn stumbles forward on a gust of wild magic.";
+  }
+];
+
+function triggerChaosFlash() {
+  const wrap = document.querySelector(".board-wrap");
+  if (!wrap) return;
+  wrap.classList.add("chaos-flash");
+  setTimeout(() => wrap.classList.remove("chaos-flash"), 600);
+}
+
+function maybeTriggerChaos(){
+  if (gameOver) return;   // Chaos always on; no toggle gate
+
+  chaosMoveCounter++;
+
+  let shouldTrigger = false;
+
+  // Guarantee at least one event within first CHAOS_FORCE_AFTER half-moves
+  if (!chaosHasTriggered && chaosMoveCounter >= CHAOS_FORCE_AFTER) {
+    shouldTrigger = true;
+  } else if (chaosMoveCounter >= chaosNextTrigger) {
+    shouldTrigger = true;
+  }
+
+  if (!shouldTrigger) return;
+
+  chaosMoveCounter=0;
+  chaosHasTriggered = true;
+  chaosNextTrigger = 3 + Math.floor(Math.random()*4); // 3–6
+
+  let message=null;
+  for (let i=0;i<5 && !message;i++){
+    const ev=CHAOS_EVENTS[Math.floor(Math.random()*CHAOS_EVENTS.length)];
+    message=ev();
+  }
+  if (message){
+    setInfo(message);
+    history.push(message);
+    appendHistory(message);
+    triggerChaosFlash();
+    renderBoard();
+  }
+}
+
+/* Selection & clicks */
+function clearHintGlow(){
+  document.querySelectorAll(".square.hint-glow")
+    .forEach(el => el.classList.remove("hint-glow"));
+}
+function selectSquare(r,c){
+  const p=board[r][c];
+  if (!p || p.color!==currentPlayer) return;
+  selected={r,c};
+  validMoves = getMoves(r,c);
+  renderBoard();
+
+  const lore = randomLore(p);
+  const isHumanTurn = (currentPlayer===humanColor);
+  const canSpell = isHumanTurn && canCastSpell(p,true);
+
+  if (canSpell){
+    const meta = SPELL_META[p.type];
+    const loreText = lore ? lore : "";
+    setInfo((loreText ? loreText + "\n\n" : "") + `${meta.name}: ${meta.desc}`);
+  } else {
+    setInfo(lore || DEFAULT_INFO);
+  }
+  updateSpellButton();
+}
+function handleSquareClick(r,c){
+  if (gameOver || currentPlayer!==humanColor) return;
+
+  const piece = board[r][c];
+
+  if (piece && piece.color===currentPlayer){
+    selectSquare(r,c);
+    return;
+  }
+
+  if (!selected){
+    setInfo(DEFAULT_INFO);
+    return;
+  }
+
+  const move = validMoves.find(m=>m.r===r && m.c===c);
+  if (!move){
+    selected=null;
+    validMoves=[];
+    renderBoard();
+    setInfo(DEFAULT_INFO);
+    updateSpellButton();
+    return;
+  }
+
+  clearHintGlow();
+  makeMove(selected.r,selected.c,r,c);
+  selected=null;
+  validMoves=[];
+  renderBoard();
+  updateSpellButton();
+  endTurn();
+}
+
+/* Save / load / hint / history */
+function saveGame(){
+  const snap = {
+    board,
+    currentPlayer,
+    humanColor,
+    aiColor,
+    manaPlayer,
+    manaAI,
+    history,
+    spellCooldowns,
+    enchantedPieces,
+    chaosMoveCounter,
+    chaosNextTrigger,
+    chaosHasTriggered,
+    difficulty
+  };
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snap));
+    setInfo("Game saved to your browser.");
+  }catch(e){
+    setInfo("Could not save – browser storage blocked.");
+  }
+}
+function loadGame(){
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw){ setInfo("No saved game found."); return; }
+  try{
+    const snap = JSON.parse(raw);
+    board = snap.board;
+    currentPlayer = snap.currentPlayer;
+    humanColor = snap.humanColor;
+    aiColor = snap.aiColor;
+    manaPlayer = snap.manaPlayer;
+    manaAI = snap.manaAI;
+    history = snap.history || [];
+    spellCooldowns = snap.spellCooldowns || spellCooldowns;
+    enchantedPieces = snap.enchantedPieces || enchantedPieces;
+    chaosMoveCounter = snap.chaosMoveCounter || 0;
+    chaosNextTrigger = snap.chaosNextTrigger || 3;
+    chaosHasTriggered = !!snap.chaosHasTriggered;
+    difficulty = snap.difficulty || "medium";
+    undoStack = [];
+    gameOver=false;
+
+    const histElem=document.getElementById("moveHistory");
+    histElem.innerHTML="";
+    history.forEach(line=>appendHistory(line));
+
+    renderBoard();
+    updateTurnIndicator();
+    updateManaUI();
+    updateSpellButton();
+    setInfo("Game loaded.");
+  }catch(e){
+    setInfo("Saved data corrupted.");
+  }
+}
+function showHint(){
+  if (gameOver || currentPlayer!==humanColor) return;
+  const moves = getAllMovesFor(humanColor);
+  if (!moves.length){ setInfo("You have no legal moves."); return; }
+  const choice = moves[Math.floor(Math.random()*moves.length)];
+  const piece = board[choice.sr][choice.sc];
+  const lore = randomLore(piece);
+
+  clearHintGlow();
+  const fromEl = document.querySelector(
+    `.square[data-row="${choice.sr}"][data-col="${choice.sc}"]`
+  );
+  if (fromEl) fromEl.classList.add("hint-glow");
+
+  const name = pieceFullName(piece);
+  const hintText =
+    (lore ? lore + "\n\n" : "") +
+    `Hint: Try moving your ${name} from ${coord(choice.sr,choice.sc)} to ${coord(choice.tr,choice.tc)}.`;
+
+  setInfo(hintText);
+}
+function toggleHistory(){
+  const hist=document.getElementById("moveHistory");
+  const btn=document.getElementById("toggleHistory");
+  if (hist.style.display==="none" || !hist.style.display){
+    hist.style.display="block";
+    btn.textContent="Hide History";
+  } else {
+    hist.style.display="none";
+    btn.textContent="Show History";
+  }
+}
+
+/* New game & side swap */
+function resetSpellsAndChaos(){
+  enchantedPieces.w=null;
+  enchantedPieces.b=null;
+  spellCooldowns = {
+    w:{k:0,q:0,r:0,b:0,n:0,p:0},
+    b:{k:0,q:0,r:0,b:0,n:0,p:0}
+  };
+  spellMode=false;
+  chaosMoveCounter=0;
+  chaosNextTrigger=3;
+  chaosHasTriggered=false;
+}
+function newGame(){
+  initBoard();
+  resetSpellsAndChaos();
+  history=[];
+  undoStack=[];
+  gameOver=false;
+  currentPlayer=ORDER;
+
+  manaPlayer=0;
+  manaAI=0;
+  difficulty=document.getElementById("difficultySelect").value;
+  if (difficulty==="easy"){
+    manaPlayer=100;       // Easy starts with full spell power
+  }
+
+  const histElem=document.getElementById("moveHistory");
+  histElem.innerHTML="";
+
+  renderBoard();
+  updateTurnIndicator();
+  updateManaUI();
+  updateSpellButton();
+  setInfo(DEFAULT_INFO);
+
+  // If human chose Chaos, AI moves first
+  if (humanColor===CHAOS){
+    currentPlayer=ORDER;
+    updateTurnIndicator();
+    // 3 second pause before AI's first move as well
+    setTimeout(doAIMove, 3000);
+  }
+}
+function swapSides(){
+  humanColor = (humanColor===ORDER ? CHAOS : ORDER);
+  aiColor = (humanColor===ORDER ? CHAOS : ORDER);
+  newGame();
+}
+
+/* UI wiring */
+function setupUI(){
+  createBoardSquares();
+  initBoard();
+  renderBoard();
+  updateTurnIndicator();
+  updateManaUI();
+
+  document.getElementById("resetBtn").addEventListener("click", newGame);
+  document.getElementById("swapBtn").addEventListener("click", swapSides);
+  document.getElementById("undoBtn").addEventListener("click", undoMove);
+  document.getElementById("saveBtn").addEventListener("click", saveGame);
+  document.getElementById("loadBtn").addEventListener("click", loadGame);
+  document.getElementById("hintBtn").addEventListener("click", showHint);
+  document.getElementById("spellBtn").addEventListener("click", enterSpellMode);
+  document.getElementById("cancelSpellBtn").addEventListener("click", cancelSpellMode);
+  document.getElementById("toggleHistory").addEventListener("click", toggleHistory);
+
+  const diffSel=document.getElementById("difficultySelect");
+  diffSel.addEventListener("change",(e)=>{
+    difficulty=e.target.value;
+    document.getElementById("undoBtn").disabled = (difficulty==="hard");
+  });
+  document.getElementById("undoBtn").disabled = (difficulty==="hard");
+
+  setInfo(DEFAULT_INFO);
+  newGame();
+}
+
+/* Init */
+setupUI();
+</script>
+</body>
+</html>
