@@ -94,30 +94,32 @@
       gap: 14px;
     }
 
+    /* UPDATED: use Dave.png as the logo image with hover spin */
     .logo-icon {
-      width: 42px;
-      height: 42px;
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, #ffe76b 0, #ff4d9d 40%, #2a3eff 100%);
       box-shadow: var(--shadow-neon);
-      position: relative;
-      overflow: hidden;
+      object-fit: cover;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      transform: rotate(0deg);
+      transition: transform 0.4s ease-out;
     }
 
-    .logo-icon::before,
-    .logo-icon::after {
-      content: "";
-      position: absolute;
-      inset: 18%;
-      border-radius: 8px;
-      border: 2px solid rgba(5, 8, 18, 0.8);
-      transform: rotate(-10deg);
+    .logo-icon:hover {
+      animation: logo-spin 0.7s linear;
     }
 
-    .logo-icon::after {
-      inset: 30%;
-      transform: rotate(10deg);
-      border-color: rgba(5, 8, 18, 0.6);
+    @keyframes logo-spin {
+      from {
+        transform: rotate(0deg) scale(1);
+      }
+      50% {
+        transform: rotate(180deg) scale(1.05);
+      }
+      to {
+        transform: rotate(360deg) scale(1);
+      }
     }
 
     .logo-text-main {
@@ -451,7 +453,8 @@
   <main class="page">
     <header class="header">
       <div class="logo">
-        <div class="logo-icon"></div>
+        <!-- UPDATED: use Dave.png as the logo image -->
+        <img class="logo-icon" src="Dave.png" alt="Dave's Goofy Games Logo">
         <div>
           <div class="logo-text-main">Dave's Goofy Games</div>
           <div class="logo-text-sub">Tiny web arcade • Experiments • Chaos-friendly chess</div>
@@ -497,7 +500,7 @@
 
       <div class="games-grid">
         <!-- Wizard Chess Card -->
-        <a class="card-link" href="https://github.com/dwimpush-hub/Games/blob/main/WizardChess.html">
+        <a class="card-link" href="WizardChess.html">
           <article class="game-card">
             <div class="game-tag-row">
               <span class="game-tag-pill">Wizard Chess</span>
@@ -518,7 +521,7 @@
               <span class="badge">AI Opponent</span>
             </div>
             <div class="game-footer">
-              <a class="play-btn" href="wizard-chess.html">
+              <a class="play-btn" href="WizardChess.html">
                 <span>▶</span> Play Now
               </a>
               <div class="play-meta">
