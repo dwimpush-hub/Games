@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>Wizard Chess</title>
+    <script type="module" crossorigin src="./assets/index-C_Kd5qhm.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CaFicOw6.css">
+  </head>
+  <body>
+    <div class="check-vignette" aria-hidden="true"></div>
+    <div id="announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+    <main class="game-shell" id="app">
+      <header class="status" id="status">
+        <div class="status__main">
+          <div class="status__row">
+            <span class="status__turn" id="turnIndicator">Order to move</span>
+            <span class="status__thinking sigil" id="thinking" hidden aria-hidden="true"></span>
+            <span class="badge badge--check" id="checkBadge" hidden>Check!</span>
+            <button
+              id="muteBtn"
+              type="button"
+              class="btn-icon"
+              aria-pressed="false"
+              title="Sound on/off (M)"
+              aria-label="Sound on/off"
+            >
+              🔊
+            </button>
+          </div>
+          <ul class="omens" id="omens" aria-live="polite" aria-label="Omens"></ul>
+          <div class="mana-row">
+            <div
+              class="mana mana--you"
+              id="manaYou"
+              role="progressbar"
+              aria-label="Your spell power"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <svg class="crystal" viewBox="0 0 60 100" aria-hidden="true">
+                <defs>
+                  <clipPath id="crystalClipYou">
+                    <polygon points="30,3 55,27 49,86 30,97 11,86 5,27" />
+                  </clipPath>
+                  <linearGradient id="liquidYou" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#ffeb3b" />
+                    <stop offset="0.5" stop-color="#7c4dff" />
+                    <stop offset="1" stop-color="#40c4ff" />
+                  </linearGradient>
+                </defs>
+                <polygon class="crystal__glass" points="30,3 55,27 49,86 30,97 11,86 5,27" />
+                <g clip-path="url(#crystalClipYou)">
+                  <rect
+                    class="crystal__liquid"
+                    id="manaLiquid"
+                    x="0"
+                    y="100"
+                    width="60"
+                    height="110"
+                    fill="url(#liquidYou)"
+                  />
+                  <g class="crystal__bubbles">
+                    <circle cx="18" cy="90" r="2" />
+                    <circle cx="34" cy="94" r="1.4" />
+                    <circle cx="44" cy="88" r="1.8" />
+                    <circle cx="26" cy="96" r="1.2" />
+                  </g>
+                </g>
+                <path class="crystal__facet" d="M30 3 L30 97 M5 27 L55 27 M11 86 L49 86" />
+                <path class="crystal__shine" d="M12 30 L22 12" />
+                <polygon class="crystal__outline" points="30,3 55,27 49,86 30,97 11,86 5,27" />
+              </svg>
+              <div class="mana__meta">
+                <span class="mana__label">Spell Power</span>
+                <span class="mana__text" id="manaText">0%</span>
+              </div>
+            </div>
+            <div class="mana mana--rival" aria-label="Rival spell power">
+              <svg class="crystal crystal--small" viewBox="0 0 60 100" aria-hidden="true">
+                <defs>
+                  <clipPath id="crystalClipRival">
+                    <polygon points="30,3 55,27 49,86 30,97 11,86 5,27" />
+                  </clipPath>
+                  <linearGradient id="liquidRival" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#ff8a65" />
+                    <stop offset="1" stop-color="#d500f9" />
+                  </linearGradient>
+                </defs>
+                <polygon class="crystal__glass" points="30,3 55,27 49,86 30,97 11,86 5,27" />
+                <g clip-path="url(#crystalClipRival)">
+                  <rect
+                    class="crystal__liquid"
+                    id="rivalManaLiquid"
+                    x="0"
+                    y="100"
+                    width="60"
+                    height="110"
+                    fill="url(#liquidRival)"
+                  />
+                </g>
+                <path class="crystal__facet" d="M30 3 L30 97 M5 27 L55 27 M11 86 L49 86" />
+                <polygon class="crystal__outline" points="30,3 55,27 49,86 30,97 11,86 5,27" />
+              </svg>
+              <div class="mana__meta">
+                <span class="mana__label">Rival</span>
+                <span class="mana__text" id="rivalManaText">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <nav class="status__menu" aria-label="Duel menu">
+          <button
+            id="openMenuBtn"
+            type="button"
+            class="menu-btn"
+            title="Menu: new duel, undo, save, grimoire, feats"
+          >
+            ☰ Menu
+          </button>
+          <button id="openHistoryBtn" type="button" class="menu-btn" title="Move history">
+            📜 Moves
+          </button>
+          <button id="openLogBtn" type="button" class="menu-btn" title="Duel log">📖 Log</button>
+        </nav>
+      </header>
+
+      <section class="board-wrap" id="boardWrap" aria-label="Board">
+        <div class="board-frame">
+          <div class="ranks" id="rankLabels" aria-hidden="true"></div>
+          <div class="board-area">
+            <div id="board" class="board"></div>
+            <div class="board-vignette" aria-hidden="true"></div>
+          </div>
+          <div class="corner" aria-hidden="true"></div>
+          <div class="files" id="fileLabels" aria-hidden="true"></div>
+        </div>
+        <div id="chaosBanner" class="chaos-banner" role="status" aria-live="assertive" hidden></div>
+        <div class="table-rival" id="tableRival" aria-hidden="true">
+          <svg class="portrait piece--b" id="tableRivalPortrait" viewBox="0 0 100 100">
+            <use href="#pt-pip"></use>
+          </svg>
+          <div class="table-rival__text">
+            <b id="tableRivalName"></b>
+            <span id="tableRivalBubble">…</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <div class="spell-row">
+          <button id="castBtn" type="button" class="btn-cast" title="Cast spell (C)" disabled>
+            Cast Spell
+          </button>
+          <button id="cancelBtn" type="button" class="btn-cancel" title="Cancel (Esc)" hidden>
+            Cancel Spell
+          </button>
+          <button id="grimoireBtn" type="button" class="btn-grimoire" title="Grimoire (G)">
+            <span class="btn-grimoire__icon" aria-hidden="true">✦</span> Grimoire
+          </button>
+        </div>
+        <p class="status-line" id="statusLine" role="status" aria-live="polite"></p>
+
+        <section class="puzzle-panel" id="puzzlePanel" hidden aria-label="Puzzle">
+          <div class="puzzle-panel__head">
+            <span class="puzzle-panel__tag">Puzzle</span>
+            <b id="puzzleName"></b>
+          </div>
+          <p class="puzzle-panel__hint" id="puzzleHint"></p>
+          <ol class="puzzle-panel__steps" id="puzzleSteps">
+            <li data-step="1">Select your <b id="puzzlePiece"></b>, the glowing piece</li>
+            <li data-step="2">Press <b>Cast Spell</b> to arm <b id="puzzleSpell"></b></li>
+            <li data-step="3">Move it to the <b>purple</b> square that gives mate</li>
+          </ol>
+          <div class="puzzle-panel__actions">
+            <button type="button" id="puzzleResetBtn" title="Put the pieces back">
+              Reset board
+            </button>
+            <button type="button" id="puzzleListBtn" title="Pick another puzzle">
+              All puzzles
+            </button>
+            <button type="button" id="puzzleLeaveBtn" title="Back to duelling">Leave puzzle</button>
+          </div>
+        </section>
+
+        <section class="persona persona--rival" id="rivalPanel">
+          <svg
+            class="portrait piece--b"
+            id="rivalPortrait"
+            viewBox="0 0 100 100"
+            aria-hidden="true"
+          >
+            <use href="#pt-cowled" />
+          </svg>
+          <div class="persona__text">
+            <div class="persona__who">
+              <b class="persona__name" id="rivalName">Rival</b>
+              <span class="persona__title" id="rivalTitle"></span>
+            </div>
+            <p class="bubble" id="rivalBubble">…</p>
+          </div>
+        </section>
+
+        <section class="persona persona--champion" id="championPanel">
+          <div class="persona__text">
+            <div class="persona__who">
+              <b class="persona__name" id="championName">Champion</b>
+              <span class="persona__title" id="championTitle"></span>
+            </div>
+            <p class="bubble" id="championBubble">…</p>
+          </div>
+          <svg
+            class="portrait piece--w"
+            id="championPortrait"
+            viewBox="0 0 100 100"
+            aria-hidden="true"
+          >
+            <use href="#pt-pointy-hat" />
+          </svg>
+        </section>
+
+        <section class="piece-chat" id="pieceChat" aria-label="The pieces talk">
+          <p class="piece-chat__empty" id="pieceChatEmpty">The pieces will speak as they move.</p>
+        </section>
+      </aside>
+    </main>
+
+    <dialog id="titleDialog" class="dialog dialog--title" aria-labelledby="titleHeading">
+      <form method="dialog" class="dialog__form title" id="titleForm">
+        <div class="title__hero">
+          <svg class="title__king piece--w" viewBox="0 0 100 100" aria-hidden="true">
+            <use href="#pc-w-k" />
+          </svg>
+          <div class="title__text">
+            <p class="title__over">Order against Chaos</p>
+            <h1 id="titleHeading" class="title__name">Wizard Chess</h1>
+            <p class="title__tag">Chess, but magic bends the rules.</p>
+          </div>
+          <svg class="title__king piece--b" viewBox="0 0 100 100" aria-hidden="true">
+            <use href="#pc-b-k" />
+          </svg>
+        </div>
+
+        <fieldset class="side-pick">
+          <legend class="pick__legend">Play as</legend>
+          <label class="side-card side-card--w">
+            <input type="radio" name="side" value="w" checked />
+            <svg class="side-card__icon piece--w" viewBox="0 0 100 100" aria-hidden="true">
+              <use href="#pc-w-q" />
+            </svg>
+            <span class="side-card__name">Order</span>
+            <span class="side-card__sub">Starlight and sworn oaths. Moves first.</span>
+          </label>
+          <label class="side-card side-card--b">
+            <input type="radio" name="side" value="b" />
+            <svg class="side-card__icon piece--b" viewBox="0 0 100 100" aria-hidden="true">
+              <use href="#pc-b-q" />
+            </svg>
+            <span class="side-card__name">Chaos</span>
+            <span class="side-card__sub">Embers and broken vows. Moves second.</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="diff-pick">
+          <legend class="pick__legend">Rival</legend>
+          <label class="chip">
+            <input type="radio" name="difficulty" value="easy" />
+            <span class="chip__name">Apprentice</span>
+            <span class="chip__sub">Easy · full power at start · undo</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="difficulty" value="medium" checked />
+            <span class="chip__name">Warlock</span>
+            <span class="chip__sub">Medium · undo allowed</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="difficulty" value="hard" />
+            <span class="chip__name">Chaos King</span>
+            <span class="chip__sub">Hard · no undo</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="diff-pick chaos-pick">
+          <legend class="pick__legend">Chaos</legend>
+
+          <label class="chip"
+            ><input type="radio" name="chaos" value="calm" /><span class="chip__name">Calm</span
+            ><span class="chip__sub">Rare, gentle storms</span></label
+          >
+
+          <label class="chip"
+            ><input type="radio" name="chaos" value="wild" checked /><span class="chip__name"
+              >Wild</span
+            ><span class="chip__sub">Every few moves</span></label
+          >
+
+          <label class="chip"
+            ><input type="radio" name="chaos" value="storm" /><span class="chip__name">Storm</span
+            ><span class="chip__sub">Constant, violent</span></label
+          >
+        </fieldset>
+
+        <p class="title__callout" id="titleCallout" hidden>
+          New here? <b>How to play</b> is three quick lessons: move, capture, cast.
+        </p>
+
+        <p class="title__puzzle" id="titlePuzzleNote" hidden>
+          Puzzle in progress: <b id="titlePuzzleName"></b>. Start Duel leaves it.
+        </p>
+
+        <div class="title__links">
+          <button type="button" id="titleGrimoireBtn" class="link-btn">Grimoire</button>
+
+          <button type="button" id="titleFeatsBtn" class="link-btn">Feats</button>
+          <button type="button" id="titlePuzzlesBtn" class="link-btn">Puzzles</button>
+          <button type="button" id="titleTutorialBtn" class="link-btn">How to play</button>
+          <button type="button" id="titleSettingsBtn" class="link-btn">Settings</button>
+
+          <span class="title__record" id="titleRecord"></span>
+        </div>
+
+        <div class="dialog__actions title__actions">
+          <button type="submit" value="new" class="btn-primary btn-big" id="startBtn">
+            Start Duel
+          </button>
+          <button type="submit" value="continue" id="continueBtn" hidden>
+            Continue saved duel
+          </button>
+          <button type="submit" value="close" id="closeTitleBtn" hidden>Back to the board</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="resultDialog" class="dialog" aria-labelledby="resultTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="resultTitle" class="dialog__title">Checkmate</h2>
+        <p id="resultText" class="dialog__sub"></p>
+        <dl class="recap" id="recap"></dl>
+        <div class="dialog__actions">
+          <button type="submit" value="rematch" class="btn-primary">Rematch</button>
+          <button type="submit" value="swap">Swap sides &amp; rematch</button>
+          <button type="submit" value="title">Title screen</button>
+          <button type="submit" value="close">Look at the board</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="historyDialog" class="dialog dialog--wide" aria-labelledby="historyTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="historyTitle" class="dialog__title">Move history</h2>
+        <ol class="history history--dialog" id="history" aria-label="Move history"></ol>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="logDialog" class="dialog dialog--wide" aria-labelledby="logTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="logTitle" class="dialog__title">Duel log</h2>
+        <div class="feed feed--dialog" id="feed" role="log" aria-label="Duel log"></div>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="menuDialog" class="dialog dialog--wide" aria-labelledby="menuTitle">
+      <form method="dialog" class="dialog__form" id="controlsPanel">
+        <h2 id="menuTitle" class="dialog__title">Menu</h2>
+        <div class="controls" role="toolbar" aria-label="Duel controls">
+          <button id="menuBtn" type="button" title="New duel (N)">New Duel</button>
+          <button id="undoBtn" type="button" title="Undo (U)">Undo</button>
+          <button id="hintBtn" type="button" title="Hint (H)">Hint</button>
+          <button id="saveBtn" type="button" title="Save (S)">Save</button>
+          <button id="loadBtn" type="button" title="Load (L)">Load</button>
+          <button id="featsBtn" type="button" title="Feats (F)">Feats</button>
+          <button id="puzzlesBtn" type="button" title="Spell puzzles (P)">Puzzles</button>
+          <button id="tutorialBtn" type="button" title="Three-step tutorial">How to play</button>
+          <button id="settingsBtn" type="button" title="Settings">Settings</button>
+        </div>
+        <details class="panel" open>
+          <summary>Pieces &amp; controls</summary>
+          <dl class="legend" id="legend">
+            <div data-type="k">
+              <dt></dt>
+              <dd>King</dd>
+            </div>
+            <div data-type="q">
+              <dt></dt>
+              <dd>Mage (Queen)</dd>
+            </div>
+            <div data-type="r">
+              <dt></dt>
+              <dd>Tower (Rook)</dd>
+            </div>
+            <div data-type="b">
+              <dt></dt>
+              <dd>Oracle / Skull-Seer (Bishop)</dd>
+            </div>
+            <div data-type="n">
+              <dt></dt>
+              <dd>Dragon / Bat Rider (Knight)</dd>
+            </div>
+            <div data-type="p">
+              <dt></dt>
+              <dd>Apprentice / Ash-kin (Pawn)</dd>
+            </div>
+          </dl>
+          <p class="help">
+            Click or tap a piece, then a gold square. Keyboard: arrows move the cursor, Enter
+            selects, C casts, Esc cancels, U undo, H hint, N new duel, G grimoire, F feats, M mute.
+          </p>
+        </details>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog" class="dialog dialog--wide" aria-labelledby="settingsTitle">
+      <form method="dialog" class="dialog__form" id="settingsForm">
+        <h2 id="settingsTitle" class="dialog__title">Settings</h2>
+        <fieldset class="field">
+          <legend>Sound and motion</legend>
+          <label><input type="checkbox" id="setSound" /> Sound effects</label>
+          <label
+            ><input type="checkbox" id="setReduceMotion" /> Reduce motion (no slides, sparks or
+            shakes)</label
+          >
+          <label
+            >Camera
+            <select id="setCinema">
+              <option value="fixed">Fixed at the table (no camera moves)</option>
+              <option value="spells">Ride along on spells</option>
+              <option value="all">Ride along on captures and spells</option>
+            </select></label
+          >
+        </fieldset>
+        <fieldset class="field">
+          <legend>Keys</legend>
+          <p class="help">
+            Arrows move the cursor, Enter selects, Escape cancels. Click a key to change it, then
+            press the new one.
+          </p>
+          <div class="bindings" id="bindingsList"></div>
+          <button type="button" id="resetBindingsBtn">Reset keys</button>
+        </fieldset>
+        <p class="help">
+          Gamepad: d-pad or stick moves, A selects, B cancels, X casts, Y hints, Start opens the
+          menu.
+        </p>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="puzzlesDialog" class="dialog dialog--wide" aria-labelledby="puzzlesTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="puzzlesTitle" class="dialog__title">Spell puzzles</h2>
+        <p class="dialog__sub">
+          Each is mate in one, and only a spell will do it. Solve them to learn what every spell is
+          for.
+        </p>
+        <ol class="puzzle-how" aria-label="How a puzzle works">
+          <li>
+            <b>Pick a puzzle below.</b> The board loads with exactly enough Spell Power for its
+            spell.
+          </li>
+          <li>
+            <b>Select the glowing piece</b>, press <b>Cast Spell</b>, then move it to the
+            <b>purple</b> square that gives mate. The sidebar counts the three steps with you.
+          </li>
+          <li>
+            A wrong move puts the pieces back. <b>Leave puzzle</b> in the sidebar returns you to
+            duelling.
+          </li>
+        </ol>
+        <ul class="puzzles" id="puzzlesList"></ul>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Close</button>
+          <button type="submit" value="leave" id="puzzlesLeaveBtn" hidden>Leave puzzle</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="puzzleDoneDialog" class="dialog" aria-labelledby="puzzleDoneTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="puzzleDoneTitle" class="dialog__title">Solved</h2>
+        <p class="dialog__sub" id="puzzleDoneText"></p>
+        <div class="dialog__actions">
+          <button type="submit" value="next" class="btn-primary">Next puzzle</button>
+          <button type="submit" value="list">All puzzles</button>
+          <button type="submit" value="duel">Back to duelling</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="grimoireDialog" class="dialog dialog--wide" aria-labelledby="grimoireTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="grimoireTitle" class="dialog__title">Grimoire</h2>
+        <p class="dialog__sub">
+          Every cast attunes a piece to its spell. Attune enough and you choose how it evolves; the
+          rival evolves with you, down the other path.
+        </p>
+        <div class="grimoire" id="grimoireList"></div>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="featsDialog" class="dialog dialog--wide" aria-labelledby="featsTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="featsTitle" class="dialog__title">Feats</h2>
+        <p class="dialog__sub" id="featsSummary"></p>
+        <ul class="feats" id="featsList"></ul>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="promotionDialog" class="dialog" aria-labelledby="promoTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="promoTitle" class="dialog__title">Your Apprentice ascends</h2>
+        <p class="dialog__sub">Choose its new form.</p>
+        <div class="dialog__actions promo" id="promoChoices"></div>
+      </form>
+    </dialog>
+
+  </body>
+</html>
