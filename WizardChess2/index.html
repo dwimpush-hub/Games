@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-Bb6qSqik.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CuzpRIlI.css">
+    <script type="module" crossorigin src="./assets/index-C9d1feKq.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DZveCBhO.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -317,6 +317,14 @@
             <div class="chronicle__head">
               <span class="chronicle__tag">The Chronicle</span>
               <b id="chronicleChapter">I. The Summons</b>
+              <button
+                type="button"
+                class="chronicle__open"
+                id="chronicleOpenBtn"
+                title="Read the whole chronicle"
+              >
+                Read all
+              </button>
             </div>
             <div class="chronicle__beats" id="chronicleBeats"></div>
           </section>
@@ -448,6 +456,18 @@
       <form method="dialog" class="dialog__form">
         <h2 id="historyTitle" class="dialog__title">Move history</h2>
         <ol class="history history--dialog" id="history" aria-label="Move history"></ol>
+        <div class="dialog__actions">
+          <button type="submit" value="close" class="btn-primary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="chronicleDialog" class="dialog dialog--wide" aria-labelledby="chronicleTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="chronicleTitle" class="dialog__title">The Chronicle</h2>
+        <p class="dialog__sub" id="chronicleSub"></p>
+        <dl class="recap chronicle-stats" id="chronicleStats"></dl>
+        <div class="chronicle-full" id="chronicleFull"></div>
         <div class="dialog__actions">
           <button type="submit" value="close" class="btn-primary">Close</button>
         </div>
