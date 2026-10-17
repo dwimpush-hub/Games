@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-BT3hn8Bn.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BFm6rGs8.css">
+    <script type="module" crossorigin src="./assets/index-fZwpLR2S.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-ByPTZHIW.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -137,7 +137,10 @@
           <div class="corner" aria-hidden="true"></div>
           <div class="files" id="fileLabels" aria-hidden="true"></div>
         </div>
-        <div id="chaosBanner" class="chaos-banner" role="status" aria-live="assertive" hidden></div>
+        <div id="chaosBanner" class="chaos-banner" role="status" aria-live="assertive" hidden>
+          <span id="chaosBannerText"></span>
+          <span class="chaos-banner__sub" id="chaosBannerSub" hidden></span>
+        </div>
         <div class="piece-bubble" id="pieceBubble" aria-hidden="true" hidden>
           <b class="piece-bubble__who" id="pieceBubbleWho"></b>
           <span class="piece-bubble__text" id="pieceBubbleText"></span>
@@ -172,6 +175,13 @@
             <p class="codex__tier" id="codexTier"></p>
           </div>
         </div>
+      </section>
+      <section class="chronicle" id="chronicle" aria-label="The chronicle of this duel">
+        <div class="chronicle__head">
+          <span class="chronicle__tag">The Chronicle</span>
+          <b id="chronicleChapter">I. The Summons</b>
+        </div>
+        <div class="chronicle__beats" id="chronicleBeats"></div>
       </section>
       <section class="fallen" id="fallen" aria-label="Captured pieces">
         <div class="fallen__row">
