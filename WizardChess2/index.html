@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-CiokumHx.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index--fITq9Oq.css">
+    <script type="module" crossorigin src="./assets/index-Bb6qSqik.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CuzpRIlI.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
     <div id="announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
     <main class="game-shell" id="app">
+      <div class="backdrop" id="backdrop" aria-hidden="true"></div>
       <header class="status" id="status">
         <div class="status__main">
           <div class="status__row">
@@ -177,24 +178,17 @@
             </div>
           </div>
         </section>
-        <section class="chronicle" id="chronicle" aria-label="The chronicle of this duel">
-          <div class="chronicle__head">
-            <span class="chronicle__tag">The Chronicle</span>
-            <b id="chronicleChapter">I. The Summons</b>
+        <section class="fallen" id="fallen" aria-label="Captured pieces">
+          <div class="fallen__row">
+            <span class="fallen__label">Order has taken</span>
+            <span class="fallen__icons" id="fallenByOrder"></span>
           </div>
-          <div class="chronicle__beats" id="chronicleBeats"></div>
+          <div class="fallen__row">
+            <span class="fallen__label">Chaos has taken</span>
+            <span class="fallen__icons" id="fallenByChaos"></span>
+          </div>
         </section>
       </div>
-      <section class="fallen" id="fallen" aria-label="Captured pieces">
-        <div class="fallen__row">
-          <span class="fallen__label">Order has taken</span>
-          <span class="fallen__icons" id="fallenByOrder"></span>
-        </div>
-        <div class="fallen__row">
-          <span class="fallen__label">Chaos has taken</span>
-          <span class="fallen__icons" id="fallenByChaos"></span>
-        </div>
-      </section>
       <div class="rival-say" id="rivalSay" hidden>
         <b class="rival-say__who" id="rivalSayWho"></b>
         <span id="rivalSayText"></span>
@@ -315,9 +309,18 @@
           </svg>
         </section>
 
-        <section class="piece-chat" id="pieceChat" aria-label="The pieces talk">
-          <p class="piece-chat__empty" id="pieceChatEmpty">The pieces will speak as they move.</p>
-        </section>
+        <div class="right-stack">
+          <section class="piece-chat" id="pieceChat" aria-label="The pieces talk">
+            <p class="piece-chat__empty" id="pieceChatEmpty">The pieces will speak as they move.</p>
+          </section>
+          <section class="chronicle" id="chronicle" aria-label="The chronicle of this duel">
+            <div class="chronicle__head">
+              <span class="chronicle__tag">The Chronicle</span>
+              <b id="chronicleChapter">I. The Summons</b>
+            </div>
+            <div class="chronicle__beats" id="chronicleBeats"></div>
+          </section>
+        </div>
       </aside>
     </main>
 
