@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-fZwpLR2S.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-ByPTZHIW.css">
+    <script type="module" crossorigin src="./assets/index-CiokumHx.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index--fITq9Oq.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -156,33 +156,35 @@
         </div>
       </section>
 
-      <section class="codex" id="codex" aria-label="About this piece">
-        <p class="codex__empty" id="codexEmpty">Hover a piece to read who it is.</p>
-        <div class="codex__body" id="codexBody" hidden>
-          <div class="codex__head">
-            <span class="codex__icon" id="codexIcon"></span>
-            <div>
-              <b id="codexName"></b>
-              <span class="codex__type" id="codexType"></span>
+      <div class="left-stack" id="leftStack">
+        <section class="codex" id="codex" aria-label="About this piece">
+          <p class="codex__empty" id="codexEmpty">Hover a piece to read who it is.</p>
+          <div class="codex__body" id="codexBody" hidden>
+            <div class="codex__head">
+              <span class="codex__icon" id="codexIcon"></span>
+              <div>
+                <b id="codexName"></b>
+                <span class="codex__type" id="codexType"></span>
+              </div>
+            </div>
+            <p class="codex__lore" id="codexLore"></p>
+            <p class="codex__moves" id="codexMoves"></p>
+            <div class="codex__spell">
+              <span class="codex__label">Spell</span>
+              <b id="codexSpell"></b><span class="codex__cost" id="codexCost"></span>
+              <p id="codexSpellDesc"></p>
+              <p class="codex__tier" id="codexTier"></p>
             </div>
           </div>
-          <p class="codex__lore" id="codexLore"></p>
-          <p class="codex__moves" id="codexMoves"></p>
-          <div class="codex__spell">
-            <span class="codex__label">Spell</span>
-            <b id="codexSpell"></b><span class="codex__cost" id="codexCost"></span>
-            <p id="codexSpellDesc"></p>
-            <p class="codex__tier" id="codexTier"></p>
+        </section>
+        <section class="chronicle" id="chronicle" aria-label="The chronicle of this duel">
+          <div class="chronicle__head">
+            <span class="chronicle__tag">The Chronicle</span>
+            <b id="chronicleChapter">I. The Summons</b>
           </div>
-        </div>
-      </section>
-      <section class="chronicle" id="chronicle" aria-label="The chronicle of this duel">
-        <div class="chronicle__head">
-          <span class="chronicle__tag">The Chronicle</span>
-          <b id="chronicleChapter">I. The Summons</b>
-        </div>
-        <div class="chronicle__beats" id="chronicleBeats"></div>
-      </section>
+          <div class="chronicle__beats" id="chronicleBeats"></div>
+        </section>
+      </div>
       <section class="fallen" id="fallen" aria-label="Captured pieces">
         <div class="fallen__row">
           <span class="fallen__label">Order has taken</span>
