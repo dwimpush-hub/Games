@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-BQCSC4c9.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CI-vaifE.css">
+    <script type="module" crossorigin src="./assets/index-DLOKgXQO.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-acuFs-eL.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -153,6 +153,36 @@
         </div>
       </section>
 
+      <section class="codex" id="codex" aria-label="About this piece">
+        <p class="codex__empty" id="codexEmpty">Hover a piece to read who it is.</p>
+        <div class="codex__body" id="codexBody" hidden>
+          <div class="codex__head">
+            <span class="codex__icon" id="codexIcon"></span>
+            <div>
+              <b id="codexName"></b>
+              <span class="codex__type" id="codexType"></span>
+            </div>
+          </div>
+          <p class="codex__lore" id="codexLore"></p>
+          <p class="codex__moves" id="codexMoves"></p>
+          <div class="codex__spell">
+            <span class="codex__label">Spell</span>
+            <b id="codexSpell"></b><span class="codex__cost" id="codexCost"></span>
+            <p id="codexSpellDesc"></p>
+            <p class="codex__tier" id="codexTier"></p>
+          </div>
+        </div>
+      </section>
+      <section class="fallen" id="fallen" aria-label="Captured pieces">
+        <div class="fallen__row">
+          <span class="fallen__label">Order has taken</span>
+          <span class="fallen__icons" id="fallenByOrder"></span>
+        </div>
+        <div class="fallen__row">
+          <span class="fallen__label">Chaos has taken</span>
+          <span class="fallen__icons" id="fallenByChaos"></span>
+        </div>
+      </section>
       <div class="rival-say" id="rivalSay" hidden>
         <b class="rival-say__who" id="rivalSayWho"></b>
         <span id="rivalSayText"></span>
