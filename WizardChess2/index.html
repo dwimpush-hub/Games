@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-DU1lUkOB.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BXTDeY0c.css">
+    <script type="module" crossorigin src="./assets/index-BQCSC4c9.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CI-vaifE.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -153,6 +153,11 @@
         </div>
       </section>
 
+      <div class="rival-say" id="rivalSay" hidden>
+        <b class="rival-say__who" id="rivalSayWho"></b>
+        <span id="rivalSayText"></span>
+      </div>
+
       <aside class="sidebar">
         <div class="spell-row">
           <button id="castBtn" type="button" class="btn-cast" title="Cast spell (C)" disabled>
@@ -190,6 +195,49 @@
         </section>
 
         <section class="persona persona--rival" id="rivalPanel">
+          <svg class="painting__filigree" viewBox="0 0 236 300" aria-hidden="true">
+            <defs>
+              <symbol
+                id="filigree"
+                viewBox="0 0 40 40"
+                fill="none"
+                stroke="#e8c874"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                opacity="0.9"
+              >
+                <path d="M3 37 C3 18 12 8 32 5" />
+                <path d="M3 37 C8 24 18 15 32 12" />
+                <path d="M32 5 c-5 0 -8 4 -5 7 c3 3 8 0 6 -4" />
+                <path d="M6 30 c-3 -3 1 -8 5 -6 c3 2 1 6 -2 6" />
+              </symbol>
+            </defs>
+            <use href="#filigree" x="30" y="30" width="40" height="40" />
+            <use
+              href="#filigree"
+              x="166"
+              y="30"
+              width="40"
+              height="40"
+              transform="scale(-1 1) translate(-372 0)"
+            />
+            <use
+              href="#filigree"
+              x="30"
+              y="230"
+              width="40"
+              height="40"
+              transform="scale(1 -1) translate(0 -500)"
+            />
+            <use
+              href="#filigree"
+              x="166"
+              y="230"
+              width="40"
+              height="40"
+              transform="scale(-1 -1) translate(-372 -500)"
+            />
+          </svg>
           <svg
             class="portrait piece--b"
             id="rivalPortrait"
