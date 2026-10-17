@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-C6vXzq0E.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-GZXBhHwJ.css">
+    <script type="module" crossorigin src="./assets/index-DU1lUkOB.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BXTDeY0c.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -138,6 +138,10 @@
           <div class="files" id="fileLabels" aria-hidden="true"></div>
         </div>
         <div id="chaosBanner" class="chaos-banner" role="status" aria-live="assertive" hidden></div>
+        <div class="piece-bubble" id="pieceBubble" aria-hidden="true" hidden>
+          <b class="piece-bubble__who" id="pieceBubbleWho"></b>
+          <span class="piece-bubble__text" id="pieceBubbleText"></span>
+        </div>
         <div class="table-rival" id="tableRival" aria-hidden="true">
           <svg class="portrait piece--b" id="tableRivalPortrait" viewBox="0 0 100 100">
             <use href="#pt-pip"></use>
