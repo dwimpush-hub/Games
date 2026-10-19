@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-DrZRb2L7.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DNtSx9A_.css">
+    <script type="module" crossorigin src="./assets/index-q1UGdtHB.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CUyBDbqM.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -283,6 +283,7 @@
           >
             <use href="#pt-cowled" />
           </svg>
+          <img class="painting__img" id="rivalPainting" alt="" hidden />
           <div class="persona__text">
             <div class="persona__who">
               <b class="persona__name" id="rivalName">Rival</b>
@@ -308,6 +309,7 @@
           >
             <use href="#pt-pointy-hat" />
           </svg>
+          <img class="medallion__img" id="championPainting" alt="" hidden />
         </section>
 
         <div class="right-stack">
@@ -436,9 +438,7 @@
           <button type="submit" value="new" class="btn-primary btn-big" id="startBtn">
             Start Duel
           </button>
-          <button type="button" class="btn-big btn-campaign" id="titleCampaignBtn">
-            Campaign: the road of three rivals
-          </button>
+          <button type="button" class="btn-big btn-campaign" id="titleCampaignBtn">Campaign</button>
           <button type="submit" value="continue" id="continueBtn" hidden>
             Continue saved duel
           </button>
@@ -495,6 +495,7 @@
         >
           <use href="#pt-cowled"></use>
         </svg>
+        <img class="boss__painting" id="bossPainting" alt="" hidden />
         <h2 id="bossName" class="dialog__title boss__name">Rival</h2>
         <p class="boss__title" id="bossTitle"></p>
         <p class="boss__place" id="bossPlace"></p>
@@ -638,6 +639,11 @@
             >
             <button type="button" id="testChampionVoice" title="Hear a line">Test</button>
           </div>
+          <label
+            ><input type="checkbox" id="setHdVoice" /> HD voices: a neural voice per character,
+            rendered in your browser (one ~90 MB download, then cached)</label
+          >
+          <p class="help hd-status" id="hdVoiceStatus">Off</p>
           <p class="help" id="voiceTip">
             Voices come from your system. For better ones on a Mac: System Settings › Accessibility
             › Spoken Content › System Voice › Manage Voices, download an <b>Enhanced</b> or
