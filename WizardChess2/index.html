@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-CM5dDoXH.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-C_NoJj92.css">
+    <script type="module" crossorigin src="./assets/index-BUhrKDYq.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CMWk4xDi.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -75,7 +75,7 @@
                 <polygon class="crystal__outline" points="30,3 55,27 49,86 30,97 11,86 5,27" />
               </svg>
               <div class="mana__meta">
-                <span class="mana__label">Spell Power</span>
+                <span class="mana__label" id="manaLabelYou">Spell Power</span>
                 <span class="mana__text" id="manaText">0%</span>
               </div>
             </div>
@@ -106,7 +106,7 @@
                 <polygon class="crystal__outline" points="30,3 55,27 49,86 30,97 11,86 5,27" />
               </svg>
               <div class="mana__meta">
-                <span class="mana__label">Rival</span>
+                <span class="mana__label" id="manaLabelRival">Rival</span>
                 <span class="mana__text" id="rivalManaText">0%</span>
               </div>
             </div>
@@ -385,6 +385,11 @@
             <span class="chip__name">Chaos King</span>
             <span class="chip__sub">Hard · no undo</span>
           </label>
+          <label class="chip chip--hotseat">
+            <input type="radio" name="difficulty" value="hotseat" />
+            <span class="chip__name">Two players</span>
+            <span class="chip__sub">Hot-seat · one screen, no rival</span>
+          </label>
         </fieldset>
 
         <fieldset class="diff-pick chaos-pick">
@@ -507,23 +512,23 @@
             </div>
             <div data-type="q">
               <dt></dt>
-              <dd>Mage (Queen)</dd>
+              <dd>Mage / Warlock</dd>
             </div>
             <div data-type="r">
               <dt></dt>
-              <dd>Tower (Rook)</dd>
+              <dd>Tower / Bastion</dd>
             </div>
             <div data-type="b">
               <dt></dt>
-              <dd>Oracle / Skull-Seer (Bishop)</dd>
+              <dd>Oracle / Skull-Seer</dd>
             </div>
             <div data-type="n">
               <dt></dt>
-              <dd>Dragon / Bat Rider (Knight)</dd>
+              <dd>Dragon / Bat Rider</dd>
             </div>
             <div data-type="p">
               <dt></dt>
-              <dd>Apprentice / Ash-kin (Pawn)</dd>
+              <dd>Apprentice / Ash-kin</dd>
             </div>
           </dl>
           <p class="help">
