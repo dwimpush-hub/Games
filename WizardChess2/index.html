@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-C9d1feKq.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DZveCBhO.css">
+    <script type="module" crossorigin src="./assets/index-H60Ebn7N.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D6TgukfQ.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -563,6 +563,30 @@
               <option value="off">No voices</option>
             </select></label
           >
+          <div class="voice-pick">
+            <label
+              ><span id="rivalVoiceLabel">Rival's voice</span>
+              <select id="setRivalVoice">
+                <option value="">Automatic (best installed)</option>
+              </select></label
+            >
+            <button type="button" id="testRivalVoice" title="Hear a line">Test</button>
+          </div>
+          <div class="voice-pick">
+            <label
+              ><span id="championVoiceLabel">Champion's voice</span>
+              <select id="setChampionVoice">
+                <option value="">Automatic (best installed)</option>
+              </select></label
+            >
+            <button type="button" id="testChampionVoice" title="Hear a line">Test</button>
+          </div>
+          <p class="help" id="voiceTip">
+            Voices come from your system. For better ones on a Mac: System Settings › Accessibility
+            › Spoken Content › System Voice › Manage Voices, download an <b>Enhanced</b> or
+            <b>Premium</b> English voice, then reload the game. Automatic picks the best one
+            installed.
+          </p>
         </fieldset>
         <fieldset class="field">
           <legend>Keys</legend>
