@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-BUhrKDYq.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CMWk4xDi.css">
+    <script type="module" crossorigin src="./assets/index-C1ffSDBH.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Dc-kWfto.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -435,6 +435,9 @@
           <button type="submit" value="new" class="btn-primary btn-big" id="startBtn">
             Start Duel
           </button>
+          <button type="button" class="btn-big btn-campaign" id="titleCampaignBtn">
+            Campaign: the road of three rivals
+          </button>
           <button type="submit" value="continue" id="continueBtn" hidden>
             Continue saved duel
           </button>
@@ -449,10 +452,57 @@
         <p id="resultText" class="dialog__sub"></p>
         <dl class="recap" id="recap"></dl>
         <div class="dialog__actions">
-          <button type="submit" value="rematch" class="btn-primary">Rematch</button>
-          <button type="submit" value="swap">Swap sides &amp; rematch</button>
+          <button type="submit" value="campaign" class="btn-primary" id="resultCampaignBtn" hidden>
+            Next rival
+          </button>
+          <button type="submit" value="rematch" class="btn-primary" id="resultRematchBtn">
+            Rematch
+          </button>
+          <button type="submit" value="swap" id="resultSwapBtn">Swap sides &amp; rematch</button>
           <button type="submit" value="title">Title screen</button>
           <button type="submit" value="close">Look at the board</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="campaignDialog" class="dialog dialog--wide" aria-labelledby="campaignTitle">
+      <form method="dialog" class="dialog__form">
+        <h2 id="campaignTitle" class="dialog__title">The Road of Three Rivals</h2>
+        <p class="dialog__sub" id="campaignSub"></p>
+        <ol class="road" id="road" aria-label="The road"></ol>
+        <p class="road__note" id="campaignNote"></p>
+        <div class="dialog__actions">
+          <button type="submit" value="face" class="btn-primary" id="campaignFaceBtn">
+            Face the rival
+          </button>
+          <button type="submit" value="reset" id="campaignResetBtn" hidden>
+            Walk the road again
+          </button>
+          <button type="submit" value="close">Back</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="bossDialog" class="dialog dialog--boss" aria-labelledby="bossName">
+      <form method="dialog" class="dialog__form boss">
+        <p class="boss__stage" id="bossStage"></p>
+        <svg
+          class="portrait piece--b boss__portrait"
+          id="bossPortrait"
+          viewBox="0 0 100 100"
+          aria-hidden="true"
+        >
+          <use href="#pt-cowled"></use>
+        </svg>
+        <h2 id="bossName" class="dialog__title boss__name">Rival</h2>
+        <p class="boss__title" id="bossTitle"></p>
+        <p class="boss__place" id="bossPlace"></p>
+        <ul class="boss__lines" id="bossLines" aria-live="polite"></ul>
+        <div class="dialog__actions">
+          <button type="submit" value="begin" class="btn-primary btn-big" id="bossBeginBtn">
+            Begin the duel
+          </button>
+          <button type="submit" value="close">Not now</button>
         </div>
       </form>
     </dialog>
@@ -548,6 +598,7 @@
         <fieldset class="field">
           <legend>Sound and motion</legend>
           <label><input type="checkbox" id="setSound" /> Sound effects</label>
+          <label><input type="checkbox" id="setMusic" /> Music (a theme per rival)</label>
           <label
             ><input type="checkbox" id="setReduceMotion" /> Reduce motion (no slides, sparks or
             shakes)</label
