@@ -1,0 +1,7 @@
+Character paintings, all public domain (CC0) from the Art Institute of Chicago's open access collection
+(https://www.artic.edu/open-access). Image files are the museum's IIIF renditions at 843 px.
+
+- aurelia.jpg     Aert de Gelder, "Portrait of a Young Woman", c. 1690, oil on canvas. artic.edu/artworks/105887
+- apprentice.jpg  Follower of Frans Hals, "Portrait of an Artist", 1644, oil on canvas. artic.edu/artworks/862
+- warlock.jpg     Attributed to Alessandro Allori, "Francesco de' Medici", c. 1560. artic.edu/artworks/24684
+- chaosKing.jpg   Rembrandt van Rijn, "Old Man with a Gold Chain", 1631, oil on panel. artic.edu/artworks/95998

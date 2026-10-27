@@ -1,0 +1,7 @@
+Effect sprites in this folder:
+
+- magic_*, star_*, twirl_*, spark_*, light_*, smoke_*, flare_*, scorch_*, circle_*, flame_*, slash_*, trace_*:
+  Particle Pack 1.1 by Kenney Vleugels (www.kenney.nl), Creative Commons Zero (CC0).
+  http://creativecommons.org/publicdomain/zero/1.0/  Credit would be nice but is not mandatory.
+- boom.png: "Explosion Sheet" by StumpyStrust, OpenGameArt (https://opengameart.org/content/explosion-sheet), CC0.
+  8 x 8 frames of 128 x 128.
