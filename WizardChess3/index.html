@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <title>Wizard Chess</title>
-    <script type="module" crossorigin src="./assets/index-DH-TVrYe.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-C_pVCsD3.css">
+    <script type="module" crossorigin src="./assets/index-BQrO_iP0.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D7lmm6-T.css">
   </head>
   <body>
     <div class="check-vignette" aria-hidden="true"></div>
@@ -351,6 +351,12 @@
           </svg>
         </div>
 
+        <p class="title__rotate" id="titleRotate" hidden>
+          <span class="title__rotate-icon" aria-hidden="true">⟲</span>
+          <span>Turn your phone sideways to play: the table fits best in <b>landscape</b>.</span>
+          <button type="button" id="titleRotateDismiss" class="link-btn">Got it</button>
+        </p>
+
         <fieldset class="side-pick">
           <legend class="pick__legend">Play as</legend>
           <label class="side-card side-card--w">
@@ -421,15 +427,6 @@
 
         <p class="title__puzzle" id="titlePuzzleNote" hidden>
           Puzzle in progress: <b id="titlePuzzleName"></b>. Start Duel leaves it.
-        </p>
-
-        <p class="title__rotate" id="titleRotate" hidden>
-          <span class="title__rotate-icon" aria-hidden="true">⟲</span>
-          <span
-            >Best played in <b>landscape</b>: turn your phone for the full table. Portrait works
-            too, just smaller.</span
-          >
-          <button type="button" id="titleRotateDismiss" class="link-btn">Got it</button>
         </p>
 
         <div class="title__links">
