@@ -138,6 +138,7 @@
       margin-top: 4px;
     }
 
+    /* The loading ticker: a goofy line at a time; the light pulses, then the next one rolls up. */
     .header-chip {
       font-family: 'Press Start 2P', system-ui, sans-serif;
       font-size: 10px;
@@ -152,14 +153,65 @@
       align-items: center;
       gap: 8px;
       white-space: nowrap;
+      max-width: 100%;
     }
 
     .header-chip-dot {
+      flex: none;
       width: 6px;
       height: 6px;
       border-radius: 50%;
       background: var(--accent-pink);
       box-shadow: 0 0 8px rgba(255, 77, 157, 0.9);
+    }
+
+    .header-chip-dot.is-pulsing {
+      animation: chip-pulse 0.45s ease-in-out 3;
+    }
+
+    @keyframes chip-pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 8px rgba(255, 77, 157, 0.9);
+      }
+      50% {
+        transform: scale(2.1);
+        box-shadow: 0 0 18px rgba(255, 77, 157, 1), 0 0 30px rgba(0, 230, 255, 0.8);
+        background: var(--accent-cyan);
+      }
+    }
+
+    .header-chip-text {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.6;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    .header-chip-text.is-leaving {
+      transform: translateY(-120%);
+      opacity: 0;
+    }
+
+    .header-chip-text.is-arriving {
+      transform: translateY(120%);
+      opacity: 0;
+      transition: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .header-chip-dot.is-pulsing {
+        animation: none;
+      }
+
+      .header-chip-text,
+      .header-chip-text.is-leaving,
+      .header-chip-text.is-arriving {
+        transition: none;
+        transform: none;
+        opacity: 1;
+      }
     }
 
     .intro {
@@ -245,10 +297,15 @@
       color: var(--text-muted);
     }
 
+    /* The cabinet: one tile per game, equal height, three across on a desktop, two on a tablet, one on
+       a phone. Each tile is one grid cell (no wrapper links round the cards, which the browser used to
+       split into extra empty cells). */
     .games-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-auto-rows: 1fr;
       gap: 16px;
+      align-items: stretch;
     }
 
     .game-card {
@@ -261,11 +318,11 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-width: 0;
       transition:
         transform 0.18s ease-out,
         box-shadow 0.18s ease-out,
         border-color 0.18s ease-out;
-      cursor: pointer;
     }
 
     .game-card::before {
@@ -280,14 +337,24 @@
       pointer-events: none;
     }
 
-    .game-card:hover {
+    .game-card--playable {
+      cursor: pointer;
+    }
+
+    .game-card--playable:hover,
+    .game-card--playable:focus-within {
       transform: translateY(-4px);
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6);
       border-color: rgba(0, 230, 255, 0.6);
     }
 
-    .game-card:hover::before {
+    .game-card--playable:hover::before,
+    .game-card--playable:focus-within::before {
       opacity: 1;
+    }
+
+    .game-card--soon {
+      opacity: 0.82;
     }
 
     .game-tag-row {
@@ -369,6 +436,7 @@
 
     .game-footer {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
@@ -395,13 +463,28 @@
       white-space: nowrap;
     }
 
+    /* The Play button's link covers its whole tile, so a click anywhere on the tile plays. */
+    .play-btn--tile::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
     .play-btn span {
       font-size: 11px;
     }
 
-    .play-btn:hover {
+    .play-btn:hover,
+    .game-card--playable:hover .play-btn {
       box-shadow: 0 0 16px rgba(0, 230, 255, 0.9);
       transform: translateY(-1px);
+    }
+
+    .play-btn[disabled] {
+      cursor: default;
+      opacity: 0.55;
+      box-shadow: none;
     }
 
     .play-meta {
@@ -414,6 +497,13 @@
     .play-meta strong {
       color: var(--accent-yellow);
       font-weight: 700;
+    }
+
+    /* Links inside a tile (the earlier versions) sit above the tile's own link. */
+    .play-meta a {
+      position: relative;
+      z-index: 2;
+      color: var(--accent-cyan);
     }
 
     .footer {
@@ -433,12 +523,13 @@
       font-size: 10px;
     }
 
-    a.card-link {
-      color: inherit;
-      text-decoration: none;
+    /* Responsive tweaks */
+    @media (max-width: 960px) {
+      .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
-    /* Responsive tweaks */
     @media (max-width: 720px) {
       .page {
         padding-inline: 12px;
@@ -452,8 +543,19 @@
         padding-inline: 16px;
       }
 
+      .header-chip {
+        width: 100%;
+        justify-content: center;
+      }
+
       .games-subtitle {
         display: none;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .games-grid {
+        grid-template-columns: minmax(0, 1fr);
       }
     }
   </style>
@@ -472,9 +574,9 @@
           <div class="logo-text-sub">Tiny web arcade • Experiments • Chaos-friendly chess</div>
         </div>
       </div>
-      <div class="header-chip">
-        <span class="header-chip-dot"></span>
-        <span>Now loading: Wizard Chess</span>
+      <div class="header-chip" role="status" aria-live="polite">
+        <span class="header-chip-dot" id="chip-dot"></span>
+        <span class="header-chip-text" id="chip-text">Now loading: Wizard Chess</span>
       </div>
     </header>
 
@@ -485,7 +587,8 @@
           This is Dave’s little corner of the internet for browser-based experiments, oddball ideas,
           and games that don’t take themselves too seriously. Start with
           <strong>Wizard Chess</strong>—a chaos-fueled twist on classic chess with spells, mana, and
-          unpredictable events—and check back as new games join the cabinet.
+          unpredictable events—or follow the Yellow Brick Road in <strong>OZ-ventures!</strong>, and
+          check back as new games join the cabinet.
         </p>
       </div>
       <div class="intro-stats">
@@ -512,77 +615,73 @@
 
       <div class="games-grid">
         <!-- Wizard Chess Card -->
-        <a class="card-link" href="WizardChess3/">
-          <article class="game-card">
-            <div class="game-tag-row">
-              <span class="game-tag-pill">Wizard Chess</span>
-              <span class="game-tag-mode">3.0 • 1P vs AI • Phone-ready</span>
-            </div>
-            <div class="game-title">
-              Wizard Chess
-              <span>Order vs Chaos</span>
-            </div>
-            <p class="game-description">
-              Chess, but magic bends the rules. Fill your Spell Power with every move, give any piece a
-              one-turn spell, read the omens before chaos strikes, and climb a ladder of three rival
-              wizards who talk back. Spells evolve in the Grimoire; feats and puzzles reward how you win.
-              Painted rivals, HD voices, and a table that fits your phone in either hand.
-            </p>
-            <div class="game-badges">
-              <span class="badge">Spells &amp; Evolution</span>
-              <span class="badge badge-secondary">Chaos Omens</span>
-              <span class="badge">Three Rivals</span>
-            </div>
-            <div class="game-footer">
-              <a class="play-btn" href="WizardChess3/">
-                <span>▶</span> Play Now
-              </a>
-              <div class="play-meta">
-                <div><strong>Best on:</strong> Desktop or a phone turned sideways</div>
-                <div>
-                  Earlier: <a href="WizardChess2/">2.0</a> ·
-                  <a href="WizardChess.html">1.0</a>
-                </div>
+        <article class="game-card game-card--playable">
+          <div class="game-tag-row">
+            <span class="game-tag-pill">Wizard Chess</span>
+            <span class="game-tag-mode">3.0 • 1P vs AI • Phone-ready</span>
+          </div>
+          <div class="game-title">
+            Wizard Chess
+            <span>Order vs Chaos</span>
+          </div>
+          <p class="game-description">
+            Chess, but magic bends the rules. Fill your Spell Power with every move, give any piece a
+            one-turn spell, read the omens before chaos strikes, and climb a ladder of three rival
+            wizards who talk back. Spells evolve in the Grimoire; feats and puzzles reward how you win.
+            Painted rivals, HD voices, and a table that fits your phone in either hand.
+          </p>
+          <div class="game-badges">
+            <span class="badge">Spells &amp; Evolution</span>
+            <span class="badge badge-secondary">Chaos Omens</span>
+            <span class="badge">Three Rivals</span>
+          </div>
+          <div class="game-footer">
+            <a class="play-btn play-btn--tile" href="WizardChess3/">
+              <span>▶</span> Play Now
+            </a>
+            <div class="play-meta">
+              <div><strong>Best on:</strong> Desktop or a phone turned sideways</div>
+              <div>
+                Earlier: <a href="WizardChess2/">2.0</a> ·
+                <a href="WizardChess.html">1.0</a>
               </div>
             </div>
-          </article>
-        </a>
+          </div>
+        </article>
 
         <!-- OZ-ventures! Card -->
-        <a class="card-link" href="OzVentures/">
-          <article class="game-card">
-            <div class="game-tag-row">
-              <span class="game-tag-pill">OZ-ventures!</span>
-              <span class="game-tag-mode">3.0 • 1P vs 3 AI • Phone-ready</span>
+        <article class="game-card game-card--playable">
+          <div class="game-tag-row">
+            <span class="game-tag-pill">OZ-ventures!</span>
+            <span class="game-tag-mode">3.0 • 1P vs 3 AI • Phone-ready</span>
+          </div>
+          <div class="game-title">
+            OZ-ventures!
+            <span>Follow the Yellow Brick Road</span>
+          </div>
+          <p class="game-description">
+            A 3D fly-through board game. Pick Dorothy, the Scarecrow, the Tin Woodman or the Cowardly
+            Lion and race three AI travellers through six zones of Oz: roll, dodge the Witch's curses,
+            ride a tornado, mend the road before the Winged Monkeys march, and answer the riddle at the
+            Emerald Gates. Every card has its moment on the board, and each zone has its own music.
+          </p>
+          <div class="game-badges">
+            <span class="badge">Six Zones</span>
+            <span class="badge badge-secondary">Seven Mini-games</span>
+            <span class="badge">Autosave</span>
+          </div>
+          <div class="game-footer">
+            <a class="play-btn play-btn--tile" href="OzVentures/">
+              <span>▶</span> Play Now
+            </a>
+            <div class="play-meta">
+              <div><strong>Best on:</strong> Desktop, a phone, or a gamepad</div>
             </div>
-            <div class="game-title">
-              OZ-ventures!
-              <span>Follow the Yellow Brick Road</span>
-            </div>
-            <p class="game-description">
-              A 3D fly-through board game. Pick Dorothy, the Scarecrow, the Tin Woodman or the Cowardly
-              Lion and race three AI travellers through six zones of Oz: roll, dodge the Witch's curses,
-              ride a tornado, mend the road before the Winged Monkeys march, and answer the riddle at the
-              Emerald Gates. Every card has its moment on the board, and each zone has its own music.
-            </p>
-            <div class="game-badges">
-              <span class="badge">Six Zones</span>
-              <span class="badge badge-secondary">Seven Mini-games</span>
-              <span class="badge">Autosave</span>
-            </div>
-            <div class="game-footer">
-              <a class="play-btn" href="OzVentures/">
-                <span>▶</span> Play Now
-              </a>
-              <div class="play-meta">
-                <div><strong>Best on:</strong> Desktop, a phone, or a gamepad</div>
-              </div>
-            </div>
-          </article>
-        </a>
+          </div>
+        </article>
 
         <!-- Coming Soon Slot -->
-        <article class="game-card">
+        <article class="game-card game-card--soon">
           <div class="game-tag-row">
             <span class="game-tag-pill">Coming Soon</span>
             <span class="game-tag-mode">Prototype</span>
@@ -617,5 +716,103 @@
       <small>Hosted on GitHub Pages • If something breaks, just blame the chaos engine.</small>
     </footer>
   </main>
+
+  <script>
+    // The loading ticker: a goofy line holds for a while, the light pulses, and the next one rolls up.
+    (function () {
+      var LINES = [
+        'Now loading: Wizard Chess',
+        'Now loading: OZ-ventures!',
+        'Now loading: mana crystals',
+        'Getting bananas for the Winged Monkeys',
+        'Polishing the Yellow Brick Road',
+        'Oiling the Tin Woodman',
+        'Teaching the Scarecrow long division',
+        'Convincing the Lion it is only a cat',
+        'Untangling the Witch’s broom',
+        'Counting lollipops in Munchkinland',
+        'Reheating last night’s chaos',
+        'Charging the Spell Power',
+        'Reading the omens (they look weird)',
+        'Asking the rival wizards to behave',
+        'Sharpening the bishops',
+        'Checking the knights for loose horseshoes',
+        'Shuffling the tornado',
+        'Waking the poppies (they are not having it)',
+        'Dusting the Emerald Gates',
+        'Looking for Toto',
+        'Apologising to the chaos engine',
+        'Feeding the field mice',
+        'Tuning the Grimoire',
+        'Ironing the Scarecrow’s hat',
+        'Setting the castling clocks',
+        'Measuring the Witch’s Wilds for fog',
+        'Refilling the oil can',
+        'Rehearsing the Guardian’s riddles',
+        'Blowing on the cartridge',
+        'Inserting coin (just kidding, it’s free)',
+        'Warming up the CRT',
+        'Bribing the dice',
+        'Teaching bats to fly in formation',
+        'Buffing the silver shoes',
+        'Pressing Start to continue',
+        'Loading the loading screen',
+        'Enchanting the pawns (lightly)',
+        'Herding the Munchkins into their huts',
+        'Painting the sky over Oz',
+        'Explaining chess to a wizard',
+        'Unjamming the gumball machine',
+        'Checking the hay for needles',
+        'Rolling a natural 6 for luck',
+        'Loading complete. Loading again.',
+      ];
+      var HOLD_MS = 7000; // a line holds this long before the light pulses and the next one shows
+      var dot = document.getElementById('chip-dot');
+      var text = document.getElementById('chip-text');
+      if (!dot || !text) return;
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var last = -1;
+
+      function pick() {
+        var i;
+        do i = Math.floor(Math.random() * LINES.length);
+        while (i === last && LINES.length > 1);
+        last = i;
+        return LINES[i];
+      }
+
+      function swap(next) {
+        if (reduced) {
+          text.textContent = next;
+          return;
+        }
+        text.classList.add('is-leaving');
+        setTimeout(function () {
+          text.textContent = next;
+          text.classList.remove('is-leaving');
+          text.classList.add('is-arriving');
+          // One frame at the arriving position, then slide in.
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              text.classList.remove('is-arriving');
+            });
+          });
+        }, 350);
+      }
+
+      function tick() {
+        // The light pulses first, then the line rolls over.
+        dot.classList.remove('is-pulsing');
+        void dot.offsetWidth; // restart the animation
+        dot.classList.add('is-pulsing');
+        setTimeout(function () {
+          swap(pick());
+        }, reduced ? 0 : 1300);
+        setTimeout(tick, HOLD_MS);
+      }
+
+      setTimeout(tick, HOLD_MS);
+    })();
+  </script>
 </body>
 </html>
